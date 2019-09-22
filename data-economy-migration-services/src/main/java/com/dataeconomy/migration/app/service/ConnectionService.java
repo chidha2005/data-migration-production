@@ -3,6 +3,7 @@ package com.dataeconomy.migration.app.service;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,44 +87,62 @@ public class ConnectionService {
 
 	public boolean validateConnection(ConnectionDto connectionDto) throws DataMigrationException {
 		try {
+			log.info(" ConnectionService :: validateConnection :: connectionDto {}",
+					ObjectUtils.toString(connectionDto));
 			if (StringUtils.equalsIgnoreCase(Constants.HIVE, connectionDto.getConnectionType())) {
 				Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
-				if (!hiveConnStringOpt.isPresent()) {
+				if (hiveConnStringOpt.isPresent()) {
 					hiveConnString = hiveConnStringOpt.get();
+					log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
+					return true;
+				} else {
+					throw new DataMigrationException("Invalid Connection Details for short term AWS Validation ");
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(Constants.IMPALA, connectionDto.getConnectionType())) {
 				Optional<String> impalaConnStringOpt = imaplaConnectionService
 						.getImpalaConnectionDetails(connectionDto);
-				if (!impalaConnStringOpt.isPresent()) {
+				if (impalaConnStringOpt.isPresent()) {
 					impalaConnString = impalaConnStringOpt.get();
+					log.info(" ConnectionService :: validateConnection :: impalaConnString {}", impalaConnString);
+					return true;
+				} else {
+
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(Constants.SPARK, connectionDto.getConnectionType())) {
 				Optional<String> sparkConnStringOpt = sparkConnectionService.getSparkConnectionDetails(connectionDto);
-				if (!sparkConnStringOpt.isPresent()) {
+				if (sparkConnStringOpt.isPresent()) {
 					sparkConnString = sparkConnStringOpt.get();
+					log.info(" ConnectionService :: validateConnection :: sparkConnString {}", sparkConnString);
+					return true;
+				} else {
+
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
 				awsLongTermAwsCredentialsService.validateLongTermAWSCredentials(connectionDto);
+				return true;
 			}
 
 			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_SC, connectionDto.getConnectionType())) {
 				if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME)) {
 					awsAssumeRoleCredentialsService.getAwsAssumeRoleRequestCredentials(connectionDto);
+					return true;
 				} else if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME_SAML))
 					awsAssumeRoleCredentialsService.getAwsAssumeRoleRequestCredentials(connectionDto);
+				return true;
 			} else if (StringUtils.equalsIgnoreCase(Constants.AWS_FEDERATED_USER, connectionDto.getConnectionType())) {
 				awsFederatedTempCredentialsService.getFederatedCredentials(connectionDto);
+				return true;
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for short term AWS Validation ");
 			}
-
 		} catch (Exception exception) {
+			log.info(" Exception occured at ConnectionService :: getConnectionObject :: validateConnection {} ",
+					ExceptionUtils.getStackTrace(exception));
 			throw new DataMigrationException("Invalid Connection Details for Connection Validation");
 		}
-		return false;
 	}
 
 	public boolean saveConnectionDetails(String requestParam, String awsRequestParam, ConnectionDto connectionDto) {

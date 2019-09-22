@@ -3,6 +3,7 @@ package com.dataeconomy.migration.app.conn.service;
 import java.text.MessageFormat;
 import java.util.Optional;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,19 +33,26 @@ public class HiveConnectionService {
 
 	public Optional<String> getHiveConnectionDetails(ConnectionDto connectionDto) throws Exception {
 		try {
+			log.info(" HiveConnectionService :: getHiveConnectionDetails :: hiveConnString {}",
+					ObjectUtils.toString(connectionDto));
 			String hiveConnectionString = StringUtils.EMPTY;
 			if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.UNSECURED)) {
 				hiveConnectionString = MessageFormat.format(hiveConnectionUnSecuredUrl, connectionDto.getHiveHostName(),
-						connectionDto.getHivePortNmbr());
+						String.valueOf(connectionDto.getHivePortNmbr()));
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: unsecured url {}",
+						hiveConnectionString);
 			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.LDAP)) {
 				hiveConnectionString = MessageFormat.format(hiveConnectionLdapUrl, connectionDto.getHiveHostName(),
-						connectionDto.getHivePortNmbr(), connectionDto.getLdapUserName(), connectionDto.getLdapDomain(),
-						connectionDto.getLdapUserPassw());
+						String.valueOf(connectionDto.getHivePortNmbr()), connectionDto.getLdapUserName(),
+						connectionDto.getLdapDomain(), connectionDto.getLdapUserPassw());
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: ldap url {}", hiveConnectionString);
 			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.KERBEROS)) {
 				hiveConnectionString = MessageFormat.format(hiveConnectionkerberosUrl, connectionDto.getHiveHostName(),
-						connectionDto.getHivePortNmbr(), connectionDto.getKerberosHostRealm(),
+						String.valueOf(connectionDto.getHivePortNmbr()), connectionDto.getKerberosHostRealm(),
 						connectionDto.getKerberosHostFqdn(), connectionDto.getKerberosServiceName());
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: kerberos url {}", hiveConnectionString);
 			} else {
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: invalid credentials");
 				throw new Exception("Not a valid Hive Authentication Details!");
 			}
 			return Optional.ofNullable(hiveConnectionString);

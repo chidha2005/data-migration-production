@@ -35,15 +35,15 @@ public class ImaplaConnectionService {
 			String impalaConnectionString = StringUtils.EMPTY;
 			if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.UNSECURED)) {
 				impalaConnectionString = MessageFormat.format(impalaConnectionUnSecuredUrl,
-						connectionDto.getImpalaHostName(), connectionDto.getImpalaPortNmbr());
+						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()));
 			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.LDAP)) {
 				impalaConnectionString = MessageFormat.format(impalaConnectionLdapUrl,
-						connectionDto.getImpalaHostName(), connectionDto.getImpalaPortNmbr(),
+						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
 						connectionDto.getLdapUserName(), connectionDto.getLdapDomain(),
 						connectionDto.getLdapUserPassw());
 			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.KERBEROS)) {
 				impalaConnectionString = MessageFormat.format(impalaConnectionkerberosUrl,
-						connectionDto.getImpalaHostName(), connectionDto.getImpalaPortNmbr(),
+						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
 						connectionDto.getKerberosHostRealm(), connectionDto.getKerberosHostFqdn(),
 						connectionDto.getKerberosServiceName());
 			} else {

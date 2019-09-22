@@ -1,5 +1,6 @@
 package com.dataeconomy.migration.app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -9,90 +10,91 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @JsonInclude(Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ConnectionDto {
 
-	private String connectionType;
+	String connectionType;
 
-	private Long srNo;
+	Long srNo;
 
-	private String domain;
+	String domain;
 
-	private TGTOtherPropDto tgtOtherPropDto;
+	TGTOtherPropDto tgtOtherPropDto;
 
-	private TGTFormatPropDto tgtFormatPropDto;
+	TGTFormatPropDto tgtFormatPropDto;
 
-	private String hiveCnctnFlag;
+	String hiveCnctnFlag;
 
-	private String hiveHostName;
+	String hiveHostName;
 
-	private Long hivePortNmbr;
+	Long hivePortNmbr;
 
-	private String impalaCnctnFlag;
+	String impalaCnctnFlag;
 
-	private String impalaHostName;
+	String impalaHostName;
 
-	private Long impalaPortNmbr;
+	Long impalaPortNmbr;
 
-	private String sparkCnctnFlag;
+	String sparkCnctnFlag;
 
-	private String sqlWhDir;
+	String sqlWhDir;
 
-	private String hiveMsUri;
+	String hiveMsUri;
 
-	private String credentialStrgType;
+	String credentialStrgType;
 
-	private String awsAccessIdLc;
+	String awsAccessIdLc;
 
-	private String awsSecretKeyLc;
+	String awsSecretKeyLc;
 
-	private String awsAccessIdSc;
+	String awsAccessIdSc;
 
-	private String awsSecretKeySc;
+	String awsSecretKeySc;
 
-	private String roleArn;
+	String roleArn;
 
-	private String principalArn;
+	String principalArn;
 
-	private String samlProviderArn;
+	String samlProviderArn;
 
-	private String roleSesnName;
+	String roleSesnName;
 
-	private String policyArnMembers;
+	String policyArnMembers;
 
-	private String externalId;
+	String externalId;
 
-	private String fdrtdUserName;
+	String fdrtdUserName;
 
-	private String inlineSesnPolicy;
+	String inlineSesnPolicy;
 
-	private Integer duration;
+	Integer duration;
 
-	private String ldapUserName;
+	String ldapUserName;
 
-	private String ldapUserPassw;
+	String ldapUserPassw;
 
-	private String ldapDomain;
+	String ldapDomain;
 
-	private String scCrdntlAccessType;
+	String scCrdntlAccessType;
 
-	private String authenticationType;
+	String authenticationType;
 
-	private String ldapCnctnFlag;
+	String ldapCnctnFlag;
 
-	private String kerberosHostRealm;
+	String kerberosHostRealm;
 
-	private String kerberosHostFqdn;
+	String kerberosHostFqdn;
 
-	private String kerberosCnctnFlag;
+	String kerberosCnctnFlag;
 
-	private String textFormatFlag;
+	String textFormatFlag;
 
-	private String kerberosServiceName;
+	String kerberosServiceName;
 
-	private String sslKeystorePath;
+	String sslKeystorePath;
 
 }

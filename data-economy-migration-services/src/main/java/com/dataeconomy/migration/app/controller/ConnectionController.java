@@ -10,8 +10,11 @@ import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
 import com.dataeconomy.migration.app.service.ConnectionService;
 
+import io.swagger.annotations.Api;
+
 @RestController
 @RequestMapping("/datamigration/connection")
+@Api(value = "DataMigration Utility Connection System")
 public class ConnectionController {
 
 	@Autowired

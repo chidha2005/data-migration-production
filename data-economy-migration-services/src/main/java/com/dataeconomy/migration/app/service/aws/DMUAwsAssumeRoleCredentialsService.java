@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
@@ -38,7 +37,7 @@ public class DMUAwsAssumeRoleCredentialsService {
 			BasicSessionCredentials basicSessionCredentials = new BasicSessionCredentials(credentials.getAccessKeyId(),
 					credentials.getSecretAccessKey(), credentials.getSessionToken());
 			return Optional.ofNullable(basicSessionCredentials);
-		} catch (SdkClientException e) {
+		} catch (Exception e) {
 			log.error(
 					"exception => Exception occured at DMUAwsAssumeRoleCredentialsService :: getAwsAssumeRoleRequestCredentials {} ",
 					ExceptionUtils.getStackTrace(e));
