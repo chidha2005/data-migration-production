@@ -1,0 +1,683 @@
+<div class="container-fluid">
+    <app-page-title title="Connection" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card-box">
+                <div class="ui-g">
+                    <div class="ui-g-12">
+                        <p-tabView>
+                            <p-tabPanel header="AWS S3">
+                                <div class="ui-g">
+                                    <div class="ui-g-12">
+                                        <form>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="includedInHDFS"
+                                                    label="AWS Access Credentials included in HDFS Site"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="longTermCredentials"
+                                                    label="AWS Access details (Long Term Credentials)"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <ng-template
+                                                [ngIf]="connectionModel.aswtoS3.connectionType=='longTermCredentials'">
+                                                <div class="form-group row">
+                                                    <label for="longTermAccessID" class="col-sm-2 col-form-label">AWS
+                                                        Access ID
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.longTermCredentials.accessID"
+                                                            name="longTermAccessID" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="longTermSecretKey" class="col-sm-2 col-form-label">AWS
+                                                        Secret Key</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.longTermCredentials.secretKey"
+                                                            name="longTermSecretKey" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="shortTermCredentials"
+                                                    label="AWS Access details (Short Term Credentials)"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <ng-template
+                                                [ngIf]="connectionModel.aswtoS3.connectionType=='shortTermCredentials'">
+                                                <div class="form-group row">
+                                                    <label for="shortTermAccessID" class="col-sm-2 col-form-label">AWS
+                                                        Access ID
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.accessID"
+                                                            name="shortTermAccessID" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="shortTermSecretKey" class="col-sm-2 col-form-label">AWS
+                                                        Secret Key</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.secretKey"
+                                                            name="shortTermSecretKey" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="roleARN" class="col-sm-2 col-form-label">Role
+                                                        ARN</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.roleARN"
+                                                            name="roleARN" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="principleARN" class="col-sm-2 col-form-label">Principal
+                                                        ARN</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.principleARN"
+                                                            name="principleARN" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="samlProviderARN" class="col-sm-2 col-form-label">SAML
+                                                        Provider ARN</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.samlProviderARN"
+                                                            name="samlProviderARN" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="roleSessionName" class="col-sm-2 col-form-label">Role
+                                                        Session Name</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.roleSessionName"
+                                                            name="roleSessionName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="policyARNNumbers" class="col-sm-2 col-form-label">Policy
+                                                        ARN members</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.policyARNNumbers"
+                                                            name="policyARNNumbers" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="externalID" class="col-sm-2 col-form-label">External
+                                                        ID</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.externalID"
+                                                            name="externalID" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="federatedUserName"
+                                                        class="col-sm-2 col-form-label">Federated User Name</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.federatedUserName"
+                                                            name="federatedUserName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="inlineSessionPolicy"
+                                                        class="col-sm-2 col-form-label">Inline Session Policy</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.inlineSessionPolicy"
+                                                            name="inlineSessionPolicy" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="duration" class="col-sm-2 col-form-label">Duration (In
+                                                        secs)</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.duration"
+                                                            name="duration" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="ldapUserName" class="col-sm-2 col-form-label">LDAP User
+                                                        Name</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.ldapUserName"
+                                                            name="ldapUserName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="ldapPassword" class="col-sm-2 col-form-label">LDAP User
+                                                        Password</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.ldapPassword"
+                                                            name="ldapPassword" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="ldapDomain" class="col-sm-2 col-form-label">LDAP
+                                                        Domain</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.aswtoS3.shortTermCredentials.ldapDomain"
+                                                            name="ldapDomain" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="assumeRole"
+                                                    label="AWS Assume Role (Other AWS Account Authorization)"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="federatedTokenAccess"
+                                                    label="AWS Federated Token Access"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="awsS3" value="assumeRoleWithSAML"
+                                                    label="AWS Assume Role with SAML Authorization"
+                                                    [(ngModel)]="connectionModel.aswtoS3.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row mt-4">
+                                                <div class="col-12">
+                                                    <div class="float-left">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-success" type="button"
+                                                                (click)="testConnection('AWS_TO_S3')">Test
+                                                                Connection</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="float-right">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-light mr-2" type="button"
+                                                                (click)="cancelConnection('AWS_TO_S3')">Cancel</button>
+                                                            <button class="btn btn-info" type="button"
+                                                                (click)="saveConnection('AWS_TO_S3')">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                            <p-tabPanel header="HDFS">
+                                <div class="ui-g">
+                                    <div class="ui-g-12">
+                                        <form>
+                                            <div class="form-group row">
+                                                <p-checkbox name="hiveDirectConnection" binary="true"
+                                                    label="Hive Direct Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.hiveDirectConnection.isSelected">
+                                                </p-checkbox>
+                                            </div>
+                                            <ng-template [ngIf]="connectionModel.hdfs.hiveDirectConnection.isSelected">
+                                                <div class="form-group row">
+                                                    <label for="hiveHostName" class="col-sm-2 col-form-label">Hive Host
+                                                        Name
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.hiveDirectConnection.hostName"
+                                                            name="hiveHostName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="hivePortName" class="col-sm-2 col-form-label">Hive Port
+                                                        Name</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.hiveDirectConnection.portName"
+                                                            name="hivePortName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <div class="form-group row">
+                                                <p-checkbox name="hiveUsingImpalaConnection" binary="true"
+                                                    label="Hive Using Impala Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.hiveUsingImpalaConnection.isSelected">
+                                                </p-checkbox>
+                                            </div>
+                                            <ng-template
+                                                [ngIf]="connectionModel.hdfs.hiveUsingImpalaConnection.isSelected">
+                                                <div class="form-group row">
+                                                    <label for="impalaHostName" class="col-sm-2 col-form-label">Impala
+                                                        Host
+                                                        Name
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.hiveUsingImpalaConnection.hostName"
+                                                            name="impalaHostName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="impalaPortName" class="col-sm-2 col-form-label">Impala
+                                                        Port
+                                                        Name</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.hiveUsingImpalaConnection.portName"
+                                                            name="impalaPortName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <div class="form-group row">
+                                                <p-checkbox name="sparkOnHiveConnection" binary="true"
+                                                    label="Spark on Hive Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.sparkOnHiveConnection.isSelected">
+                                                </p-checkbox>
+                                            </div>
+                                            <ng-template [ngIf]="connectionModel.hdfs.sparkOnHiveConnection.isSelected">
+                                                <div class="form-group row">
+                                                    <label for="sparkSqlWarehouseDir"
+                                                        class="col-sm-2 col-form-label">SQL Warehouse Dir
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.sparkOnHiveConnection.sqlWarehouseDir"
+                                                            name="sparkSqlWarehouseDir" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="sparkHiveMetastoreURI"
+                                                        class="col-sm-2 col-form-label">Hive Metastore URI</label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.sparkOnHiveConnection.hiveMetastoreURI"
+                                                            name="sparkHiveMetastoreURI" pInputText
+                                                            class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+
+
+
+                                            <div class="form-group row">
+                                                <h5>Authentication Type</h5>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="authenticationType" value="unsecuredConnection"
+                                                    label="Unsecured Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.authentication.authenticationType">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="authenticationType" value="securedConnection"
+                                                    label="Secured Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.authentication.authenticationType">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <div class="form-group row pl-4"
+                                                *ngIf="connectionModel.hdfs.authentication.authenticationType=='securedConnection'">
+                                                <p-radioButton name="securedConnection" value="ldapConnection"
+                                                    label="LDAP Connection"
+                                                    [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.connectionType">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <ng-template
+                                                [ngIf]="connectionModel.hdfs.authentication.securedConnection.connectionType=='ldapConnection'">
+                                                <div class="form-group row">
+                                                    <label for="ldapUserName" class="col-sm-2 col-form-label">User Name
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.ldapConnection.userName"
+                                                            name="ldapUserName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="ldapPassword" class="col-sm-2 col-form-label">Password
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.ldapConnection.password"
+                                                            name="ldapPassword" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="ldapDomain" class="col-sm-2 col-form-label">Domain
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.ldapConnection.domain"
+                                                            name="ldapDomain" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+
+                                            <div class="form-group row  pl-4"
+                                                *ngIf="connectionModel.hdfs.authentication.authenticationType=='securedConnection'">
+                                                <p-radioButton name="securedConnection" value="kerberos"
+                                                    label="kerberos"
+                                                    [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.connectionType">
+                                                </p-radioButton>
+                                            </div>
+                                            <ng-template
+                                                [ngIf]="connectionModel.hdfs.authentication.securedConnection.connectionType=='kerberos'">
+                                                <div class="form-group row">
+                                                    <label for="kerberosHostRealm" class="col-sm-2 col-form-label">Host
+                                                        Realm
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.kerberosConnection.hostRealm"
+                                                            name="kerberosHostRealm" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="kerberosHostFQDN" class="col-sm-2 col-form-label">Host
+                                                        FQDN
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.kerberosConnection.hostFQDN"
+                                                            name="kerberosHostFQDN" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="kerberosServiceName"
+                                                        class="col-sm-2 col-form-label">Service Name
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.kerberosConnection.serviceName"
+                                                            name="kerberosServiceName" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="kerberosSslKeyStorePath"
+                                                        class="col-sm-2 col-form-label">SSL Keystore Path
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.hdfs.authentication.securedConnection.kerberosConnection.sslKeyStorePath"
+                                                            name="kerberosSslKeyStorePath" pInputText
+                                                            class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+
+                                            <div class="form-group row mt-4">
+                                                <div class="col-12">
+                                                    <div class="float-left">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-success" type="button"
+                                                                (click)="testConnection('HDFS')">Test
+                                                                Connection</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="float-right">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-light mr-2" type="button"
+                                                                (click)="cancelConnection('HDFS')">Cancel</button>
+                                                            <button class="btn btn-info" type="button"
+                                                                (click)="saveConnection('HDFS')">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                            <p-tabPanel header="Target File Properties">
+                                <div class="ui-g">
+                                    <div class="ui-g-12">
+                                        <form>
+                                            <div class="form-group row">
+                                                <h5>Target Format Properties</h5>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="sameAsSourceFormat"
+                                                    label="Same as Source Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="textFormat"
+                                                    label="Text Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <ng-template
+                                                [ngIf]="connectionModel.targetFileProps.targetFormat=='textFormat'">
+                                                <div class="form-group row">
+                                                    <label for="fieldDelimiter" class="col-sm-2 col-form-label">Field
+                                                        Delimiter
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.targetFileProps.textFormat.fieldDelimiter"
+                                                            name="fieldDelimiter" pInputText class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="sequenceFormat"
+                                                    label="Sequence Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="recordColumnar"
+                                                    label="RC (Record Columnar) Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="avroFormat"
+                                                    label="Avro Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="orcFormat" label="ORC Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetFormat" value="parquetFormat"
+                                                    label="Parquet Format"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetFormat">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <h5>Target Compression Detais</h5>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetCompression" value="sourceFileCompresssion"
+                                                    label="Same as source File compression"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetCompression">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetCompression" value="unCompressed"
+                                                    label="Uncompressed"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetCompression">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="targetCompression" value="gzipCompression"
+                                                    label="GZIP Compression"
+                                                    [(ngModel)]="connectionModel.targetFileProps.targetCompression">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <div class="form-group row mt-4">
+                                                <div class="col-12">
+                                                    <div class="float-right">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-light mr-2" type="button"
+                                                                (click)="cancelConnection('TARGET_FILE_PROPS')">Cancel</button>
+                                                            <button class="btn btn-info" type="button"
+                                                                (click)="saveConnection('TARGET_FILE_PROPS')">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </p-tabPanel>
+                            <p-tabPanel header="Other Properties">
+                                <div class="ui-g">
+                                    <div class="ui-g-12">
+                                        <form>
+                                            <div class="form-group row">
+                                                <h5>Parallelism</h5>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="noOfParallelCopyJobs" class="col-sm-2 col-form-label">No of
+                                                    Parallel Copy Jobs
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.parallelism.noOfParallelCopyJobs"
+                                                        name="noOfParallelCopyJobs" pInputText class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="noOfParallelUserRequests" class="col-sm-2 col-form-label">No
+                                                    of
+                                                    Parallel User Request Processing
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.parallelism.noOfParallelUserRequests"
+                                                        name="noOfParallelUserRequests" pInputText class="form-control">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <h5>Tokenization</h5>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <label for="tempHiveDatabase" class="col-sm-2 col-form-label">Temporary
+                                                    Hive Database
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.hdfs.tempHiveDatabase"
+                                                        name="tempHiveDatabase" pInputText class="form-control">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <label for="tempHDFSDir" class="col-sm-2 col-form-label">Temporary HDFS
+                                                    Directory
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.hdfs.tempHDFSDir"
+                                                        name="tempHDFSDir" pInputText class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="hdfsEdgeNode" class="col-sm-2 col-form-label">HDFS Edge Node
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.hdfs.hdfsEdgeNode"
+                                                        name="hdfsEdgeNode" pInputText class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="hdfsUserName" class="col-sm-2 col-form-label">HDFS User Name
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.hdfs.hdfsUserName"
+                                                        name="hdfsUserName" pInputText class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="hdfsUserPEMFileLocation"
+                                                    class="col-sm-2 col-form-label">HDFS User PEM File Location
+                                                </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text"
+                                                        [(ngModel)]="connectionModel.otherProps.hdfs.hdfsUserPEMFileLocation"
+                                                        name="hdfsUserPEMFileLocation" pInputText class="form-control">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group row">
+                                                <p-radioButton name="tokenizationFlag" value="N"
+                                                    label="No tokenization required"
+                                                    [(ngModel)]="connectionModel.otherProps.tokenization.tokenizationFlag">
+                                                </p-radioButton>
+                                            </div>
+                                            <div class="form-group row">
+                                                <p-radioButton name="tokenizationFlag" value="Y"
+                                                    label="Tokenization required (Using Protegrity)"
+                                                    [(ngModel)]="connectionModel.otherProps.tokenization.tokenizationFlag">
+                                                </p-radioButton>
+                                            </div>
+
+                                            <ng-template
+                                                [ngIf]="connectionModel.otherProps.tokenization.tokenizationFlag=='Y'">
+                                                <div class="form-group row">
+                                                    <label for="protegrityDirectoryPath"
+                                                        class="col-sm-2 col-form-label">Protegrity Directory Path
+                                                    </label>
+                                                    <div class="col-sm-4">
+                                                        <input type="text"
+                                                            [(ngModel)]="connectionModel.otherProps.tokenization.protegrityDirectoryPath"
+                                                            name="protegrityDirectoryPath" pInputText
+                                                            class="form-control">
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+
+                                            <div class="form-group row mt-4">
+                                                <div class="col-12">
+                                                    <div class="float-right">
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-light mr-2" type="button"
+                                                                (click)="cancelConnection('OTHER_PROPS')">Cancel</button>
+                                                            <button class="btn btn-info" type="button"
+                                                                (click)="saveConnection('OTHER_PROPS')">Save</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                        </p-tabView>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
