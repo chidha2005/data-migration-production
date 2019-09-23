@@ -3,6 +3,7 @@ package com.dataeconomy.migration.app.service;
 import java.util.Optional;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.dataeconomy.migration.app.connection.DMUConnectionValidationService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
+import com.dataeconomy.migration.app.model.TGTFormatPropDto;
 import com.dataeconomy.migration.app.model.TGTOtherPropDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUAuthentication;
 import com.dataeconomy.migration.app.mysql.entity.DMUHdfs;
@@ -75,7 +77,6 @@ public class ConnectionService {
 		try {
 			log.info(" ConnectionService :: validateConnection :: connectionDto {}",
 					ObjectUtils.toString(connectionDto));
-
 			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
 				awsLongTermAwsCredentialsService.validateLongTermAWSCredentials(connectionDto);
 				return true;
@@ -104,7 +105,106 @@ public class ConnectionService {
 	}
 
 	public boolean saveConnectionDetails(ConnectionDto connectionDto) {
+		try {
+			Optional<DMUHdfs> dmuHdfsObjOpt = hdfsRepository.findById(1L);
+			Optional<DMUS3> dmuS3EntityOpt = dmuS3Repository.findById(1L);
 
+			if (dmuS3EntityOpt.isPresent()) {
+				DMUS3 dmuS3Entity = dmuS3EntityOpt.get();
+				dmuS3Entity.setCredentialStrgType(null);
+				dmuS3Entity.setAwsAccessIdLc(null);
+				dmuS3Entity.setAwsSecretKeyLc(null);
+				dmuS3Entity.setAwsAccessIdSc(null);
+				dmuS3Entity.setAwsSecretKeySc(null);
+				dmuS3Entity.setRoleArn(null);
+				dmuS3Entity.setPrincipalArn(null);
+				dmuS3Entity.setSamlProviderArn(null);
+				dmuS3Entity.setRoleSesnName(null);
+				dmuS3Entity.setPolicyArnMembers(null);
+				dmuS3Entity.setExternalId(null);
+				dmuS3Entity.setFdrtdUserName(null);
+				dmuS3Entity.setInlineSesnPolicy(null);
+				dmuS3Entity.setDuration(0L);
+				dmuS3Entity.setLdapUserName(null);
+				dmuS3Entity.setLdapDomain(null);
+				dmuS3Entity.setLdapUserName(null);
+				dmuS3Entity.setLdapUserPassw(null);
+				dmuS3Entity.setScCrdntlAccessType(null);
+
+				if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
+					dmuS3Entity.setCredentialStrgType(Constants.DIRECT_LC);
+					dmuS3Entity.setAwsAccessIdLc(connectionDto.getAwsAccessIdLc());
+					dmuS3Entity.setAwsSecretKeyLc(connectionDto.getAwsSecretKeyLc());
+				} else if (StringUtils.equalsIgnoreCase(Constants.DIRECT_SC, connectionDto.getConnectionType())) {
+					dmuS3Entity.setCredentialStrgType(Constants.DIRECT_SC);
+					dmuS3Entity.setAwsAccessIdSc(connectionDto.getAwsAccessIdSc());
+					dmuS3Entity.setAwsSecretKeySc(connectionDto.getAwsSecretKeySc());
+					if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME)) {
+						dmuS3Entity.setScCrdntlAccessType(Constants.ASSUME);
+					} else if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(),
+							Constants.ASSUME_SAML)) {
+						dmuS3Entity.setScCrdntlAccessType(Constants.ASSUME_SAML);
+					} else if (StringUtils.equalsIgnoreCase(Constants.AWS_FEDERATED_USER,
+							connectionDto.getScCrdntlAccessType())) {
+						dmuS3Entity.setScCrdntlAccessType(Constants.AWS_FEDERATED_USER);
+					}
+				}
+				dmuS3Repository.save(dmuS3Entity);
+			}
+
+			if (dmuHdfsObjOpt.isPresent()) {
+
+				DMUHdfs dmuHdfsEntity = dmuHdfsObjOpt.get();
+				dmuHdfsEntity.setHiveCnctnFlag(Constants.YES);
+				dmuHdfsEntity.setHiveHostName(null);
+				dmuHdfsEntity.setHivePortNmbr(null);
+				dmuHdfsEntity.setImpalaCnctnFlag(null);
+				dmuHdfsEntity.setImpalaHostName(null);
+				dmuHdfsEntity.setImpalaPortNmbr(null);
+				dmuHdfsEntity.setSparkCnctnFlag(null);
+				dmuHdfsEntity.setSqlWhDir(null);
+				dmuHdfsEntity.setHiveMsUri(null);
+
+				if (connectionDto.isHiveConnEnabled()) {
+					dmuHdfsEntity.setHiveCnctnFlag(Constants.YES);
+					dmuHdfsEntity.setHiveHostName(connectionDto.getHiveHostName());
+					dmuHdfsEntity.setHivePortNmbr(NumberUtils.toLong(connectionDto.getHivePortNmbr(), 0L));
+				}
+				if (connectionDto.isImpalaConnEnabled()) {
+					dmuHdfsEntity.setImpalaCnctnFlag(Constants.YES);
+					dmuHdfsEntity.setImpalaHostName(connectionDto.getImpalaHostName());
+					dmuHdfsEntity.setImpalaPortNmbr(NumberUtils.toLong(connectionDto.getHivePortNmbr(), 0L));
+				}
+				if (connectionDto.isSparkConnEnabled()) {
+					dmuHdfsEntity.setSparkCnctnFlag(Constants.YES);
+					dmuHdfsEntity.setHiveMsUri(connectionDto.getHiveMsUri());
+					dmuHdfsEntity.setSqlWhDir(connectionDto.getSqlWhDir());
+				}
+				hdfsRepository.save(dmuHdfsEntity);
+			}
+
+			if (connectionDto.getTgtFormatPropDto() != null) {
+				Optional<TGTFormatProp> tgtFormatPropEntityOpt = tgtFormatPropRepository.findById(1L);
+				if (tgtFormatPropEntityOpt.isPresent()) {
+					TGTFormatProp tgtFormatPropEntity = tgtFormatPropEntityOpt.get();
+					tgtFormatPropEntity.setTextFormatFlag(connectionDto.getTgtFormatPropDto().getTextFormatFlag());
+					tgtFormatPropEntity.setFieldDelimiter(connectionDto.getTgtFormatPropDto().getFieldDelimiter());
+					tgtFormatPropEntity.setSrcFormatFlag(connectionDto.getTgtFormatPropDto().getSrcFormatFlag());
+					tgtFormatPropEntity.setSqncFormatFlag(connectionDto.getTgtFormatPropDto().getSqncFormatFlag());
+					tgtFormatPropEntity.setRcFormatFlag(connectionDto.getTgtFormatPropDto().getRcFormatFlag());
+					tgtFormatPropEntity.setAvroFormatFlag(connectionDto.getTgtFormatPropDto().getAvroFormatFlag());
+					tgtFormatPropEntity.setOrcFormatFlag(connectionDto.getTgtFormatPropDto().getOrcFormatFlag());
+					tgtFormatPropEntity
+							.setParquetFormatFlag(connectionDto.getTgtFormatPropDto().getParquetFormatFlag());
+					tgtFormatPropEntity.setSrcCmprsnFlag(connectionDto.getTgtFormatPropDto().getSrcCmprsnFlag());
+					tgtFormatPropEntity.setUncmprsnFlag(connectionDto.getTgtFormatPropDto().getUncmprsnFlag());
+					tgtFormatPropEntity.setGzipCmprsnFlag(connectionDto.getTgtFormatPropDto().getGzipCmprsnFlag());
+					tgtFormatPropRepository.save(tgtFormatPropEntity);
+				}
+			}
+		} catch (Exception exception) {
+
+		}
 		return true;
 	}
 
@@ -120,15 +220,39 @@ public class ConnectionService {
 			if (dmuHdfs.isPresent()) {
 				DMUHdfs dmuHdfsObj = dmuHdfs.get();
 				connectionDto.setHiveCnctnFlag(dmuHdfsObj.getHiveCnctnFlag());
+				connectionDto.setHiveHostName(dmuHdfsObj.getHiveHostName());
+				connectionDto.setHivePortNmbr(
+						dmuHdfsObj.getHivePortNmbr() != null ? String.valueOf(dmuHdfsObj.getHivePortNmbr()) : "");
+
 				connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
-				connectionDto.setSparkCnctnFlag(String.valueOf(dmuHdfsObj.getSparkCnctnFlag()));
+				connectionDto.setImpalaPortNmbr(
+						dmuHdfsObj.getImpalaPortNmbr() != null ? String.valueOf(dmuHdfsObj.getImpalaPortNmbr()) : "");
+				connectionDto.setImpalaHostName(dmuHdfsObj.getImpalaHostName());
+
+				connectionDto.setSqlWhDir(dmuHdfsObj.getSqlWhDir());
+				connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
+				connectionDto.setSparkCnctnFlag(dmuHdfsObj.getSparkCnctnFlag());
 			}
 
 			if (dmuS3.isPresent()) {
 				DMUS3 dmuS3Obj = dmuS3.get();
 				connectionDto.setCredentialStrgType(dmuS3Obj.getCredentialStrgType());
+
 				connectionDto.setAwsAccessIdLc(dmuS3Obj.getAwsAccessIdLc());
 				connectionDto.setAwsSecretKeyLc(dmuS3Obj.getAwsSecretKeyLc());
+				connectionDto.setAwsAccessIdSc(dmuS3Obj.getAwsAccessIdSc());
+				connectionDto.setScCrdntlAccessType(dmuS3Obj.getScCrdntlAccessType());
+				connectionDto.setAwsSecretKeySc(dmuS3Obj.getAwsSecretKeySc());
+				connectionDto.setAwsAccessIdSc(dmuS3Obj.getAwsAccessIdLc());
+				connectionDto.setRoleArn(dmuS3Obj.getRoleArn());
+				connectionDto.setPrincipalArn(dmuS3Obj.getPrincipalArn());
+				connectionDto.setSamlProviderArn(dmuS3Obj.getSamlProviderArn());
+				connectionDto.setRoleSesnName(dmuS3Obj.getRoleSesnName());
+				connectionDto.setPolicyArnMembers(dmuS3Obj.getPolicyArnMembers());
+				connectionDto.setExternalId(dmuS3Obj.getExternalId());
+				connectionDto.setDuration(dmuS3Obj.getDuration() != null ? Math.toIntExact(dmuS3Obj.getDuration()) : 0);
+				connectionDto.setLdapUserName(dmuS3Obj.getLdapUserName());
+				connectionDto.setLdapUserPassw(dmuS3Obj.getLdapUserPassw());
 				connectionDto.setScCrdntlAccessType(dmuS3Obj.getScCrdntlAccessType());
 			}
 
@@ -141,14 +265,31 @@ public class ConnectionService {
 
 			if (tgtFormatProp.isPresent()) {
 				TGTFormatProp tgtFormatPropObj = tgtFormatProp.get();
-				connectionDto.setTextFormatFlag(tgtFormatPropObj.getTextFormatFlag());
+				connectionDto.setTgtFormatPropDto(
+						TGTFormatPropDto.builder().textFormatFlag(tgtFormatPropObj.getTextFormatFlag())
+								.srcFormatFlag(tgtFormatPropObj.getSrcFormatFlag())
+								.fieldDelimiter(tgtFormatPropObj.getFieldDelimiter())
+								.sqncFormatFlag(tgtFormatPropObj.getSqncFormatFlag())
+								.srcCmprsnFlag(tgtFormatPropObj.getSrcCmprsnFlag())
+								.rcFormatFlag(tgtFormatPropObj.getRcFormatFlag())
+								.avroFormatFlag(tgtFormatPropObj.getAvroFormatFlag())
+								.orcFormatFlag(tgtFormatPropObj.getOrcFormatFlag())
+								.parquetFormatFlag(tgtFormatPropObj.getParquetFormatFlag())
+								.srcCmprsnFlag(tgtFormatPropObj.getSrcCmprsnFlag())
+								.uncmprsnFlag(tgtFormatPropObj.getUncmprsnFlag())
+								.gzipCmprsnFlag(tgtFormatPropObj.getGzipCmprsnFlag()).build());
 			}
 
 			if (tgtOtherProp.isPresent()) {
 				TGTOtherProp tgtOtherPropObj = tgtOtherProp.get();
-				connectionDto
-						.setTgtOtherPropDto(TGTOtherPropDto.builder().parallelJobs(tgtOtherPropObj.getParallelJobs())
-								.parallelUsrRqst(tgtOtherPropObj.getParallelUsrRqst()).build());
+				connectionDto.setTgtOtherPropDto(TGTOtherPropDto.builder()
+						.parallelJobs(tgtOtherPropObj.getParallelJobs())
+						.parallelUsrRqst(tgtOtherPropObj.getParallelUsrRqst())
+						.tempHiveDB(tgtOtherPropObj.getTempHiveDB()).tempHdfsDir(tgtOtherPropObj.getTempHdfsDir())
+						.tokenizationInd(tgtOtherPropObj.getTokenizationInd())
+						.ptgyDirPath(tgtOtherPropObj.getPtgyDirPath()).hdfcEdgeNode(tgtOtherPropObj.getHdfcEdgeNode())
+						.hdfsPemLocation(tgtOtherPropObj.getHdfsPemLocation())
+						.hdfsUserName(tgtOtherPropObj.getHdfsUserName()).build());
 			}
 
 		} catch (Exception exception) {
@@ -156,22 +297,6 @@ public class ConnectionService {
 					ExceptionUtils.getStackTrace(exception));
 		}
 		return connectionDto;
-	}
-
-	private void persistConnectionDetailsForAws(ConnectionDto connectionDto) {
-		dmuS3Repository.saveAndFlush(DMUS3.builder().awsAccessIdLc(connectionDto.getAwsAccessIdLc())
-				.awsSecretKeyLc(connectionDto.getAwsSecretKeyLc()).srNo(1L).build());
-	}
-
-	private void persistConnectionDetailsForImpala(ConnectionDto connectionDto) {
-		hdfsRepository.saveAndFlush(DMUHdfs.builder().hiveCnctnFlag("Y").hiveHostName(connectionDto.getHiveHostName())
-				.hivePortNmbr(Long.valueOf(connectionDto.getHivePortNmbr())).srNo(1L).build());
-	}
-
-	private void persistConnectionDetailsForHive(ConnectionDto connectionDto) {
-		hdfsRepository
-				.saveAndFlush(DMUHdfs.builder().impalaCnctnFlag("Y").impalaHostName(connectionDto.getImpalaHostName())
-						.impalaPortNmbr(Long.valueOf(connectionDto.getImpalaPortNmbr())).srNo(1L).build());
 	}
 
 }

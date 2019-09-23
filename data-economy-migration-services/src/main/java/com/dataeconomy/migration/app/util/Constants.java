@@ -13,7 +13,7 @@ public final class Constants {
 	public static final String ASSUME = "Assume";
 	public static final String ASSUME_SAML = "AssumeSAML";
 	public static final String FEDERATED = "Federated";
-	public static final CharSequence DIRECT_SC = "DIRECT SC";
+	public static final String DIRECT_SC = "DIRECT SC";
 	public static final String CLIENT_REGION = "us-east-2";
 	public static final String YES = "Y";
 	public static final String UNSECURED = "UnSecured";

@@ -17,6 +17,12 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConnectionDto {
 
+	boolean isHiveConnEnabled;
+
+	boolean isImpalaConnEnabled;
+
+	boolean isSparkConnEnabled;
+
 	String connectionType;
 
 	Long srNo;
