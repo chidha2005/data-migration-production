@@ -1,5 +1,7 @@
 package com.dataeconomy.migration.app.model;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +13,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserDto {
 
-	private String srNo;
-	private String userId;
+	private String id;
 	private String userRole;
-	private String emailId;
+	private String emailid;
 	private String password;
+	private String userName;
+	private String createdBy;
+	private LocalDateTime createdDate;
+	private String updatedBy;
+	private LocalDateTime updatedDate;
 
 }

@@ -28,22 +28,22 @@ public class TGTFormatPropService {
 		log.info(" TGTFormatPropService :: getAllTGTFormatProp {} ");
 		try {
 			List<TGTFormatProp> tgtFormatPropList = tgtFormatPropRepository.findAll();
-			Optional.ofNullable(tgtFormatPropList).orElse(new ArrayList<>()).stream().map(tgtFormatPropEntity -> {
-				return TGTFormatPropDto.builder().srNo(tgtFormatPropEntity.getSrNo())
-						.srcFormatFlag(tgtFormatPropEntity.getSrcFormatFlag())
-						.textFormatFlag(tgtFormatPropEntity.getTextFormatFlag())
-						.fieldDelimiter(tgtFormatPropEntity.getFieldDelimiter())
-						.sqncFormatFlag(tgtFormatPropEntity.getSqncFormatFlag())
-						.rcFormatFlag(tgtFormatPropEntity.getRcFormatFlag())
-						.avroFormatFlag(tgtFormatPropEntity.getAvroFormatFlag())
-						.orcFormatFlag(tgtFormatPropEntity.getOrcFormatFlag())
-						.parquetFormatFlag(tgtFormatPropEntity.getParquetFormatFlag())
-						.srcCmprsnFlag(tgtFormatPropEntity.getSrcCmprsnFlag())
-						.uncmprsnFlag(tgtFormatPropEntity.getUncmprsnFlag())
-						.gzipCmprsnFlag(tgtFormatPropEntity.getGzipCmprsnFlag()).build();
-			}).collect(Collectors.toList());
+			return Optional.ofNullable(tgtFormatPropList).orElse(new ArrayList<>()).stream()
+					.map(tgtFormatPropEntity -> {
+						return TGTFormatPropDto.builder().srNo(tgtFormatPropEntity.getSrNo())
+								.srcFormatFlag(tgtFormatPropEntity.getSrcFormatFlag())
+								.textFormatFlag(tgtFormatPropEntity.getTextFormatFlag())
+								.fieldDelimiter(tgtFormatPropEntity.getFieldDelimiter())
+								.sqncFormatFlag(tgtFormatPropEntity.getSqncFormatFlag())
+								.rcFormatFlag(tgtFormatPropEntity.getRcFormatFlag())
+								.avroFormatFlag(tgtFormatPropEntity.getAvroFormatFlag())
+								.orcFormatFlag(tgtFormatPropEntity.getOrcFormatFlag())
+								.parquetFormatFlag(tgtFormatPropEntity.getParquetFormatFlag())
+								.srcCmprsnFlag(tgtFormatPropEntity.getSrcCmprsnFlag())
+								.uncmprsnFlag(tgtFormatPropEntity.getUncmprsnFlag())
+								.gzipCmprsnFlag(tgtFormatPropEntity.getGzipCmprsnFlag()).build();
+					}).collect(Collectors.toList());
 
-			return Collections.emptyList();
 		} catch (Exception exception) {
 			log.info(" Exception occured at TGTFormatPropRepository :: getAllTGTFormatProp {} ",
 					ExceptionUtils.getStackTrace(exception));

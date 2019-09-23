@@ -1,8 +1,8 @@
 package com.dataeconomy.migration.app.mysql.entity;
 
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -18,12 +18,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DMUPtgyTemp {
 
-	@Id
-	@Column(name = "USER_ID", length = 20, nullable = false)
-	private String userId;
-
-	@Column(name = "LABEL_NAME", length = 50, nullable = false)
-	private String labelName;
+	@EmbeddedId
+	private DMUPtgyPK id;
 
 	@Column(name = "TKNZTN_ENABLED", length = 1, nullable = true)
 	private String tknztnEnabled;

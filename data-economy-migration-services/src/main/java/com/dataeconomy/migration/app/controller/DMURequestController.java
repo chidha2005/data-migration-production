@@ -24,4 +24,9 @@ public class DMURequestController {
 		return dmuRequestService.saveRequest(historyMainDto);
 	}
 
+	@GetMapping("/all")
+	public List<String> getAllDatabases() {
+		return dmuRequestService.getAllRequestDatabases();
+	}
+
 }

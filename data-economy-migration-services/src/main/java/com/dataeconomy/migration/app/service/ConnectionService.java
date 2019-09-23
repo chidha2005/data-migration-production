@@ -1,6 +1,5 @@
 package com.dataeconomy.migration.app.service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -10,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.dataeconomy.migration.app.conn.service.HiveConnectionService;
-import com.dataeconomy.migration.app.conn.service.ImaplaConnectionService;
-import com.dataeconomy.migration.app.conn.service.SparkConnectionService;
+import com.dataeconomy.migration.app.connection.DMUConnectionValidationService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
 import com.dataeconomy.migration.app.model.TGTOtherPropDto;
@@ -28,6 +25,7 @@ import com.dataeconomy.migration.app.mysql.repository.TGTFormatPropRepository;
 import com.dataeconomy.migration.app.mysql.repository.TGTOtherPropRepository;
 import com.dataeconomy.migration.app.service.aws.AwsFederatedTempCredentialsService;
 import com.dataeconomy.migration.app.service.aws.DMUAwsAssumeRoleCredentialsService;
+import com.dataeconomy.migration.app.service.aws.DMUAwsAssumeRoleWithSAMLCredentialsService;
 import com.dataeconomy.migration.app.service.aws.DMULongTermAwsCredentialsService;
 import com.dataeconomy.migration.app.util.Constants;
 
@@ -36,9 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ConnectionService {
-
-	// private Map<String, String> cache = Collections
-	// .synchronizedMap(new PassiveExpiringMap<String, String>(2, TimeUnit.HOURS));
 
 	@Value("${hs2.datasource.driver-class-name: com.cloudera.hive.jdbc41.HS2Driver}")
 	public String hs2Driver;
@@ -62,15 +57,6 @@ public class ConnectionService {
 	private TGTOtherPropRepository tgtOtherPropRepository;
 
 	@Autowired
-	private HiveConnectionService hiveConnectionService;
-
-	@Autowired
-	private ImaplaConnectionService imaplaConnectionService;
-
-	@Autowired
-	private SparkConnectionService sparkConnectionService;
-
-	@Autowired
 	private AwsFederatedTempCredentialsService awsFederatedTempCredentialsService;
 
 	@Autowired
@@ -79,88 +65,47 @@ public class ConnectionService {
 	@Autowired
 	private DMUAwsAssumeRoleCredentialsService awsAssumeRoleCredentialsService;
 
-	private String hiveConnString;
+	@Autowired
+	private DMUAwsAssumeRoleWithSAMLCredentialsService awsAssumeRoleWithSAMLCredentialsService;
 
-	private String impalaConnString;
-
-	private String sparkConnString;
+	@Autowired
+	private DMUConnectionValidationService dmuConnectionValidationService;
 
 	public boolean validateConnection(ConnectionDto connectionDto) throws DataMigrationException {
 		try {
 			log.info(" ConnectionService :: validateConnection :: connectionDto {}",
 					ObjectUtils.toString(connectionDto));
-			if (StringUtils.equalsIgnoreCase(Constants.HIVE, connectionDto.getConnectionType())) {
-				Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
-				if (hiveConnStringOpt.isPresent()) {
-					hiveConnString = hiveConnStringOpt.get();
-					log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
-					return true;
-				} else {
-					throw new DataMigrationException("Invalid Connection Details for short term AWS Validation ");
-				}
-			}
-			if (StringUtils.equalsIgnoreCase(Constants.IMPALA, connectionDto.getConnectionType())) {
-				Optional<String> impalaConnStringOpt = imaplaConnectionService
-						.getImpalaConnectionDetails(connectionDto);
-				if (impalaConnStringOpt.isPresent()) {
-					impalaConnString = impalaConnStringOpt.get();
-					log.info(" ConnectionService :: validateConnection :: impalaConnString {}", impalaConnString);
-					return true;
-				} else {
 
-				}
-			}
-			if (StringUtils.equalsIgnoreCase(Constants.SPARK, connectionDto.getConnectionType())) {
-				Optional<String> sparkConnStringOpt = sparkConnectionService.getSparkConnectionDetails(connectionDto);
-				if (sparkConnStringOpt.isPresent()) {
-					sparkConnString = sparkConnStringOpt.get();
-					log.info(" ConnectionService :: validateConnection :: sparkConnString {}", sparkConnString);
-					return true;
-				} else {
-
-				}
-			}
 			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
 				awsLongTermAwsCredentialsService.validateLongTermAWSCredentials(connectionDto);
 				return true;
-			}
-
-			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_SC, connectionDto.getConnectionType())) {
+			} else if (StringUtils.equalsIgnoreCase(Constants.DIRECT_SC, connectionDto.getConnectionType())) {
 				if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME)) {
 					awsAssumeRoleCredentialsService.getAwsAssumeRoleRequestCredentials(connectionDto);
 					return true;
-				} else if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME_SAML))
-					awsAssumeRoleCredentialsService.getAwsAssumeRoleRequestCredentials(connectionDto);
-				return true;
-			} else if (StringUtils.equalsIgnoreCase(Constants.AWS_FEDERATED_USER, connectionDto.getConnectionType())) {
-				awsFederatedTempCredentialsService.getFederatedCredentials(connectionDto);
-				return true;
+				} else if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME_SAML)) {
+					awsAssumeRoleWithSAMLCredentialsService.getAwsAssumeRoleRequestWithSAMLCredentials(connectionDto);
+					return true;
+				} else if (StringUtils.equalsIgnoreCase(Constants.AWS_FEDERATED_USER,
+						connectionDto.getScCrdntlAccessType())) {
+					awsFederatedTempCredentialsService.getFederatedCredentials(connectionDto);
+					return true;
+				} else {
+					throw new DataMigrationException("Invalid Connection Details for AWS Shortterm Validation ");
+				}
 			} else {
-				throw new DataMigrationException("Invalid Connection Details for short term AWS Validation ");
+				return dmuConnectionValidationService.validateConnectionDetails(connectionDto);
 			}
 		} catch (Exception exception) {
 			log.info(" Exception occured at ConnectionService :: getConnectionObject :: validateConnection {} ",
 					ExceptionUtils.getStackTrace(exception));
-			throw new DataMigrationException("Invalid Connection Details for Connection Validation");
+			throw new DataMigrationException(exception.getMessage());
 		}
 	}
 
-	public boolean saveConnectionDetails(String requestParam, String awsRequestParam, ConnectionDto connectionDto) {
-		log.info(" ConnectionService :: saveConnectionDetails :: requestParam : {} :: connection details {} ",
-				requestParam, Objects.toString(connectionDto, "Invlaid Connection parameters to test "));
-		try {
-			if (StringUtils.equalsIgnoreCase(awsRequestParam, Constants.PROVIDE)) {
-				persistConnectionDetailsForAws(connectionDto);
-			} else if (StringUtils.equalsIgnoreCase(requestParam, Constants.HIVE)) {
-				persistConnectionDetailsForHive(connectionDto);
-			} else if (StringUtils.equalsIgnoreCase(requestParam, Constants.IMPALA)) {
-				persistConnectionDetailsForImpala(connectionDto);
-			}
-		} catch (Exception exception) {
-			log.info(" Exception occured at ConnectionService :: saveConnectionDetails {} ",
-					ExceptionUtils.getStackTrace(exception));
-		}
-		return false;
+	public boolean saveConnectionDetails(ConnectionDto connectionDto) {
+
+		return true;
 	}
 
 	public ConnectionDto getConnectionDetails() {
@@ -191,7 +136,7 @@ public class ConnectionService {
 				DMUAuthentication dmuAuthenticationObj = dmuAuthentication.get();
 				connectionDto.setAuthenticationType(dmuAuthenticationObj.getAuthenticationType());
 				connectionDto.setLdapCnctnFlag(dmuAuthenticationObj.getLdapCnctnFlag());
-				connectionDto.setKerberosCnctnFlag("Y");
+				connectionDto.setKerberosCnctnFlag(dmuAuthenticationObj.getKerberosCnctnFlag());
 			}
 
 			if (tgtFormatProp.isPresent()) {
@@ -227,64 +172,6 @@ public class ConnectionService {
 		hdfsRepository
 				.saveAndFlush(DMUHdfs.builder().impalaCnctnFlag("Y").impalaHostName(connectionDto.getImpalaHostName())
 						.impalaPortNmbr(Long.valueOf(connectionDto.getImpalaPortNmbr())).srNo(1L).build());
-	}
-
-	public void getConnectionObject(ConnectionDto connectionDto, String userId, String password) throws Exception {
-		try {
-			if (StringUtils.equalsIgnoreCase(Constants.YES, connectionDto.getHiveCnctnFlag())) {
-				Optional<String> hiveConnectionUrl = hiveConnectionService.getHiveConnectionDetails(connectionDto);
-				if (hiveConnectionUrl.isPresent()) {
-
-				} else {
-					throw new Exception("Not a valid Hive Connection Details!");
-				}
-			} else if (StringUtils.equalsIgnoreCase(Constants.YES, connectionDto.getImpalaCnctnFlag())) {
-				Optional<String> impalaConnectionUrl = imaplaConnectionService
-						.getImpalaConnectionDetails(connectionDto);
-				if (impalaConnectionUrl.isPresent()) {
-
-				} else {
-					throw new Exception("Not a valid Hive Connection Details!");
-				}
-			} else if (StringUtils.equalsIgnoreCase(Constants.YES, connectionDto.getSparkCnctnFlag())) {
-				Optional<String> sparkConnectionUrl = sparkConnectionService.getSparkConnectionDetails(connectionDto);
-				if (sparkConnectionUrl.isPresent()) {
-
-				} else {
-					throw new Exception("Not a valid Hive Connection Details!");
-				}
-			} else {
-				throw new Exception("Not a valid Authentication Details!");
-			}
-		} catch (Exception exception) {
-			log.info(" Exception occured at ConnectionService :: getConnectionObject {} ",
-					ExceptionUtils.getStackTrace(exception));
-			throw exception;
-		}
-	}
-
-	public String getHiveConnString() {
-		return hiveConnString;
-	}
-
-	public void setHiveConnString(String hiveConnString) {
-		this.hiveConnString = hiveConnString;
-	}
-
-	public String getImpalaConnString() {
-		return impalaConnString;
-	}
-
-	public void setImpalaConnString(String impalaConnString) {
-		this.impalaConnString = impalaConnString;
-	}
-
-	public String getSparkConnString() {
-		return sparkConnString;
-	}
-
-	public void setSparkConnString(String sparkConnString) {
-		this.sparkConnString = sparkConnString;
 	}
 
 }

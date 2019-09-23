@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
@@ -50,11 +49,11 @@ public class AwsFederatedTempCredentialsService {
 					Objects.toString(basicSessionCredentials,
 							"Unable to generate credentials for federateduser " + connectionDto.getFdrtdUserName()));
 			return Optional.of(basicSessionCredentials);
-		} catch (SdkClientException e) {
+		} catch (Exception e) {
 			log.error(
 					"exception => Exception occured at AwsFederatedTempCredentialsService :: getFederatedCredentials {} ",
 					ExceptionUtils.getStackTrace(e));
-			throw new DataMigrationException("Invalid Connection Details for AWS SAML Validation");
+			throw new DataMigrationException("Invalid Connection Details for AWS Federated User Validation");
 		}
 	}
 

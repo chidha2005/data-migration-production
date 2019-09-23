@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.service.DMUBasketService;
 
@@ -28,8 +31,9 @@ public class DMUBasketController {
 	}
 
 	@PostMapping("/save")
-	public DMUBasketDto saveBasketDetails(DMUBasketDto dmuBasketDto) {
-		return dmuBasketService.saveBasketDetails(dmuBasketDto);
+	public boolean saveBasketDetails(@RequestBody List<DMUBasketDto> dmuBasketDtoList,
+			@RequestHeader("userId") String userId) throws DataMigrationException {
+		return dmuBasketService.saveBasketDetails(dmuBasketDtoList, userId);
 	}
 
 	@GetMapping("/all/{userId}")

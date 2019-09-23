@@ -13,35 +13,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
+import com.dataeconomy.migration.app.connection.HDFSConnectionService;
+import com.dataeconomy.migration.app.util.Constants;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class RequestService {
 
-	@Autowired
-	private JdbcTemplate hiveJdbcTemplate;
-
-	public List<String> getAllRequestDatabases() {
-		log.info(" invoked =>  RequestService :: getAllRequestDatabases ");
-		try {
-			return hiveJdbcTemplate.query("SHOW DATABASES", new ResultSetExtractor<List<String>>() {
-
-				@Override
-				public List<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
-					List<String> databaseList = new ArrayList<>();
-					while (rs.next()) {
-						databaseList.add(rs.getString(1));
-					}
-					return Collections.emptyList();
-				}
-
-			});
-		} catch (Exception exception) {
-			log.info(" Exception occured at RequestService :: getAllRequestDatabases {} ",
-					ExceptionUtils.getStackTrace(exception));
-			return Collections.emptyList();
-		}
-	}
+	
 
 }

@@ -53,7 +53,7 @@ public class HiveConnectionService {
 				log.info(" HiveConnectionService :: getHiveConnectionDetails :: kerberos url {}", hiveConnectionString);
 			} else {
 				log.info(" HiveConnectionService :: getHiveConnectionDetails :: invalid credentials");
-				throw new Exception("Not a valid Hive Authentication Details!");
+				throw new Exception("Not a valid Hive Validation Details!");
 			}
 			return Optional.ofNullable(hiveConnectionString);
 		} catch (Exception exception) {

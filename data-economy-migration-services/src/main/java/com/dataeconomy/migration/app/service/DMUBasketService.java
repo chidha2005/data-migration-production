@@ -2,6 +2,7 @@ package com.dataeconomy.migration.app.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,12 +14,25 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.dataeconomy.migration.app.connection.HDFSConnectionService;
+import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUBasketTemp;
+import com.dataeconomy.migration.app.mysql.entity.DMUHIstoryDetailPK;
+import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
+import com.dataeconomy.migration.app.mysql.entity.DMUPtgyPK;
 import com.dataeconomy.migration.app.mysql.entity.DMUPtgyTemp;
+import com.dataeconomy.migration.app.mysql.entity.DMUReconDetail;
+import com.dataeconomy.migration.app.mysql.entity.DMUReconMain;
 import com.dataeconomy.migration.app.mysql.repository.BasketTempRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUPgtyRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUPtgyTempRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUReconDetailRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUReconMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.HistoryDetailRepository;
 import com.dataeconomy.migration.app.util.Constants;
 import com.google.common.collect.Lists;
 
@@ -32,7 +46,19 @@ public class DMUBasketService {
 	private DMUPgtyRepository dmuPgtyRepository;
 
 	@Autowired
-	private JdbcTemplate hiveJdbcTemplate;
+	private HDFSConnectionService hdfcConnectionService;
+
+	@Autowired
+	private DMUReconMainRepository reconMainRepository;
+
+	@Autowired
+	private HistoryDetailRepository historyDetailRepository;
+
+	@Autowired
+	private DMUReconDetailRepository dmuReconDetailRepository;
+
+	@Autowired
+	private DMUPtgyTempRepository dmuPtgyRepository;
 
 	public List<DMUBasketDto> getAllBasketDetails() {
 		try {
@@ -52,23 +78,58 @@ public class DMUBasketService {
 
 	}
 
-	public DMUBasketDto saveBasketDetails(DMUBasketDto dmuBasketDto) {
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public synchronized boolean saveBasketDetails(List<DMUBasketDto> dmuBasketDtoList, String userName)
+			throws DataMigrationException {
 		try {
-			DMUBasketTemp dmuBasketTempEntity = DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo())
-					.userId(dmuBasketDto.getUserId()).schemaName(dmuBasketDto.getSchemaName())
-					.tableName(dmuBasketDto.getTableName()).filterCondition(dmuBasketDto.getFilterCondition())
-					.targetS3Bucket(dmuBasketDto.getTargetS3Bucket()).incrementalFlag(dmuBasketDto.getIncrementalFlag())
-					.incrementalClmn(dmuBasketDto.getIncrementalClmn()).labelName(dmuBasketDto.getLabelName()).build();
-			basketTempRepository.save(dmuBasketTempEntity);
+			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
+					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
+						basketTempRepository.save(
+								DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo()).userId(dmuBasketDto.getUserId())
+										.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+										.filterCondition(dmuBasketDto.getFilterCondition())
+										.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
+										.labelName(dmuBasketDto.getLabelName()).build());
 
-			dmuPgtyRepository
-					.save(DMUPtgyTemp.builder().userId(dmuBasketDto.getUserId()).labelName(dmuBasketDto.getLabelName())
-							.tknztnEnabled(dmuBasketDto.isTknztnEnabled() ? Constants.YES : Constants.NO)
-							.tknztnFilePath(dmuBasketDto.getTknztnFilePath()).build());
-			return dmuBasketDto;
+						dmuPgtyRepository.save(DMUPtgyTemp.builder()
+								.id(DMUPtgyPK.builder().userId(dmuBasketDto.getUserId())
+										.labelName(dmuBasketDto.getLabelName()).build())
+								.tknztnEnabled(dmuBasketDto.isTknztnEnabled() ? Constants.YES : Constants.NO)
+								.tknztnFilePath(dmuBasketDto.getTknztnFilePath()).build());
+
+						reconMainRepository.save(DMUReconMain.builder().userId(dmuBasketDto.getUserId())
+								.status(Constants.NOT_STARTED).requestType(dmuBasketDto.getRequestType())
+								.requestNo(dmuBasketDto.getLabelName()).build());
+
+						historyDetailRepository.save(DMUHistoryDetail.builder()
+								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
+										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+								.filterCondition(dmuBasketDto.getFilterCondition())
+								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+								.incrementalClmn(dmuBasketDto.getIncrementalClmn()).status(Constants.SUBMITTED)
+								.build());
+
+						dmuReconDetailRepository.save(DMUReconDetail.builder()
+								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
+										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+								.filterCondition(dmuBasketDto.getFilterCondition())
+								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+								.incrementalColumn(dmuBasketDto.getIncrementalClmn()).status(Constants.NOT_STARTED)
+								.build());
+					});
+			basketTempRepository.deleteById(userName);
+			dmuPtgyRepository.deleteByRequestedUserName(userName);
+			return true;
 		} catch (Exception e) {
-			return dmuBasketDto;
+			throw new DataMigrationException("Unable to persist basket details to database ");
 		}
+
 	}
 
 	public List<DMUBasketDto> getBasketDetailsByUserId(String userId) {
@@ -99,16 +160,20 @@ public class DMUBasketService {
 
 	public List<DMUBasketDto> getBasketDetailsBySearchParam(String searchParam) {
 		try {
-			return hiveJdbcTemplate.query("USE " + searchParam + "; SHOW TABLES;",
-					new ResultSetExtractor<List<DMUBasketDto>>() {
+			return new JdbcTemplate(hdfcConnectionService.getValidDataSource(Constants.REGULAR))
+					.query("USE " + searchParam + "; SHOW TABLES;", new ResultSetExtractor<List<DMUBasketDto>>() {
 
 						@Override
 						public List<DMUBasketDto> extractData(ResultSet rs) throws SQLException, DataAccessException {
 							List<DMUBasketDto> dmuBasketDtoList = Lists.newArrayList();
 							while (rs.next()) {
-								System.out.println(rs.getString(1));
+								Long i = 0L;
+								dmuBasketDtoList.add(DMUBasketDto.builder().srNo(++i).schemaName(rs.getString(1))
+										.tableName(rs.getString(1)).filterCondition(null)
+										.targetS3Bucket(searchParam + "/" + rs.getString(1))
+										.incrementalFlag(Constants.NO).incrementalClmn(null).build());
 							}
-							return null;
+							return Collections.emptyList();
 						}
 					});
 		} catch (Exception exception) {

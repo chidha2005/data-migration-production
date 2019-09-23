@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<impala.jdbc.version>2.5.5.1007</impala.jdbc.version>
+		<impala.jdbc.version>2.5.16.1018</impala.jdbc.version>
 	</properties>
 
 	<dependencies>
@@ -30,6 +30,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core -->
+		<dependency>
+			<groupId>com.codahale.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -97,6 +103,18 @@
 			<groupId>commons-dbutils</groupId>
 			<artifactId>commons-dbutils</artifactId>
 			<version>1.6</version>
+		</dependency><!-- Mail Dependencies -->
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.xml.crypto/jsr105-api -->
+		<dependency>
+			<groupId>javax.xml.crypto</groupId>
+			<artifactId>jsr105-api</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 
 		<!-- AWS Dependencies -->
@@ -118,35 +136,35 @@
 			<artifactId>hive_metastore</artifactId>
 			<version>${impala.jdbc.version}</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/HiveJDBC41.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/hive_metastore.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.cloudera.impala.jdbc</groupId>
 			<artifactId>hive_service</artifactId>
 			<version>${impala.jdbc.version}</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/HiveJDBC41.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/hive_service.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.cloudera.impala.jdbc</groupId>
-			<artifactId>ImpalaJDBC4</artifactId>
+			<artifactId>ImpalaJDBC41</artifactId>
 			<version>${impala.jdbc.version}</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/HiveJDBC41.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/ImpalaJDBC41.jar</systemPath>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.cloudera.impala.jdbc</groupId>
 			<artifactId>ql</artifactId>
 			<version>${impala.jdbc.version}</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/HiveJDBC41.jar</systemPath>
-		</dependency>
+			<systemPath>${project.basedir}/src/main/resources/q1.jar</systemPath>
+		</dependency> -->
 		<dependency>
 			<groupId>com.cloudera.impala.jdbc</groupId>
 			<artifactId>TCLIServiceClient</artifactId>
 			<version>${impala.jdbc.version}</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/HiveJDBC41.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/TCLIServiceClient.jar</systemPath>
 		</dependency>
 		<!-- End Impala Dependencies -->
 

@@ -6,14 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class DMUBasketDto {
+public class DMUReconDetailDto {
+
+	private String requestNo;
 
 	private Long srNo;
 
-	private String userId;
+	private Long userId;
 
 	private String schemaName;
 
@@ -25,16 +27,12 @@ public class DMUBasketDto {
 
 	private String incrementalFlag;
 
-	private String incrementalClmn;
+	private String incrementalColumn;
 
-	private String labelName;
+	private Long sourceCount;
 
-	private boolean tknztnEnabled;
+	private Long targetCount;
 
-	private String tknztnFilePath;
-
-	private String requestType;
-
-	private boolean addtoBasket;
+	private String status;
 
 }

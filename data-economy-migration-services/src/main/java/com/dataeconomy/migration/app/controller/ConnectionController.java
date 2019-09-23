@@ -3,7 +3,6 @@ package com.dataeconomy.migration.app.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dataeconomy.migration.app.exception.DataMigrationException;
@@ -26,9 +25,8 @@ public class ConnectionController {
 	}
 
 	@RequestMapping("/save")
-	public boolean saveConnectionDetails(@RequestParam("hdfs") String requestParam,
-			@RequestParam("aws") String awsRequestParam, @RequestBody ConnectionDto connectionDto) {
-		return connectionService.saveConnectionDetails(requestParam, awsRequestParam, connectionDto);
+	public boolean saveConnectionDetails(@RequestBody ConnectionDto connectionDto) {
+		return connectionService.saveConnectionDetails(connectionDto);
 	}
 
 	@RequestMapping("/get")

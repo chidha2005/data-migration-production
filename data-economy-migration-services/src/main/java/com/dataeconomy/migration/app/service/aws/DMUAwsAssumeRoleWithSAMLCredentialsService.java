@@ -13,6 +13,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
+import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
 import com.dataeconomy.migration.app.util.Constants;
 
@@ -22,7 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DMUAwsAssumeRoleWithSAMLCredentialsService {
 
-	public Optional<BasicSessionCredentials> getAwsAssumeRoleRequestWithSAMLCredentials(ConnectionDto connectionDto) {
+	public Optional<BasicSessionCredentials> getAwsAssumeRoleRequestWithSAMLCredentials(ConnectionDto connectionDto)
+			throws DataMigrationException {
 		log.info(
 				"called => DMUAwsAssumeRoleWithSAMLCredentialsService :: getAwsAssumeRoleRequestWithSAMLCredentials  ");
 		try {
@@ -43,7 +45,7 @@ public class DMUAwsAssumeRoleWithSAMLCredentialsService {
 			log.error(
 					"exception => Exception occured at DMUAwsAssumeRoleWithSAMLCredentialsService :: getAwsAssumeRoleRequestWithSAMLCredentials {} ",
 					ExceptionUtils.getStackTrace(e));
-			return Optional.empty();
+			throw new DataMigrationException("Invalid Connection Details for AWS SAML Validation");
 		}
 	}
 }

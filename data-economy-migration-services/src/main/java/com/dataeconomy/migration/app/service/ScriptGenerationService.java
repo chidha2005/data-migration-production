@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
+import com.dataeconomy.migration.app.connection.HDFSConnectionService;
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
 import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
@@ -37,7 +38,7 @@ public class ScriptGenerationService {
 	private HistoryDetailRepository historyDetailRepository;
 
 	@Autowired
-	private JdbcTemplate hiveJdbcTemplate;
+	private HDFSConnectionService hdfcConnectionService;
 
 	@Transactional
 	public void proceedScriptGenerationForRequest(String requestNo) {
@@ -149,8 +150,8 @@ public class ScriptGenerationService {
 	private String invokeHDFSService(DMUHistoryDetail dmuHistoryDetail) {
 		log.info(" called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService ");
 		try {
-			return hiveJdbcTemplate.query("SHOW CREATE TABLE " + dmuHistoryDetail.getSchemaName(),
-					new ResultSetExtractor<String>() {
+			return new JdbcTemplate(hdfcConnectionService.getValidDataSource(Constants.REGULAR))
+					.query("SHOW CREATE TABLE " + dmuHistoryDetail.getSchemaName(), new ResultSetExtractor<String>() {
 
 						@Override
 						public String extractData(ResultSet rs) throws SQLException, DataAccessException {

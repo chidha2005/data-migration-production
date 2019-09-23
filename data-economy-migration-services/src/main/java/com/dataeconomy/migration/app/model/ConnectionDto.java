@@ -31,13 +31,13 @@ public class ConnectionDto {
 
 	String hiveHostName;
 
-	Long hivePortNmbr;
+	String hivePortNmbr;
 
 	String impalaCnctnFlag;
 
 	String impalaHostName;
 
-	Long impalaPortNmbr;
+	String impalaPortNmbr;
 
 	String sparkCnctnFlag;
 

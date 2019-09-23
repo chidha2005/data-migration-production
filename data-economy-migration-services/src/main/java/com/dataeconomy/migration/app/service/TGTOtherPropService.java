@@ -27,8 +27,7 @@ public class TGTOtherPropService {
 		log.info(" TGTFormatPropService :: getAllTGTFormatProp {} ");
 		try {
 			List<TGTOtherProp> tgtOtherPropList = tgtOtherPropRepository.findAll();
-
-			Optional.ofNullable(tgtOtherPropList).orElse(new ArrayList<>()).stream().map(tgtOtherPropEntity -> {
+			return Optional.ofNullable(tgtOtherPropList).orElse(new ArrayList<>()).stream().map(tgtOtherPropEntity -> {
 				return TGTOtherPropDto.builder().srNo(tgtOtherPropEntity.getSrNo())
 						.parallelJobs(tgtOtherPropEntity.getParallelJobs())
 						.parallelUsrRqst(tgtOtherPropEntity.getParallelUsrRqst())
@@ -39,7 +38,6 @@ public class TGTOtherPropService {
 						.hdfsUserName(tgtOtherPropEntity.getHdfsUserName())
 						.hdfsPemLocation(tgtOtherPropEntity.getHdfsPemLocation()).build();
 			}).collect(Collectors.toList());
-			return Collections.emptyList();
 		} catch (Exception exception) {
 			log.info(" Exception occured at TGTOtherPropService :: getAllTGTOtherProp {} ",
 					ExceptionUtils.getStackTrace(exception));
