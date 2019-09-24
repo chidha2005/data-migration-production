@@ -21,4 +21,7 @@ public interface BasketTempRepository extends JpaRepository<DMUBasketTemp, Long>
 	@Query("DELETE FROM DMUBasketTemp dmu where dmu.userId = :userId")
 	public void deleteById(@Param("userId") String userId);
 
+	@Query("DELETE FROM DMUBasketTemp dmu where dmu.srNo = :srNo")
+	public void deleteBySrNo(@Param("srNo") Long srNo);
+
 }

@@ -22,5 +22,7 @@ public class UserDto {
 	private LocalDateTime createdDate;
 	private String updatedBy;
 	private LocalDateTime updatedDate;
+	private Boolean tokenization;
+	private Integer basketCount;
 
 }

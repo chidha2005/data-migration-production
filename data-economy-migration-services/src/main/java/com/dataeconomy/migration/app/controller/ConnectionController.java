@@ -25,12 +25,12 @@ public class ConnectionController {
 	}
 
 	@RequestMapping("/save")
-	public boolean saveConnectionDetails(@RequestBody ConnectionDto connectionDto) {
+	public boolean saveConnectionDetails(@RequestBody ConnectionDto connectionDto) throws DataMigrationException {
 		return connectionService.saveConnectionDetails(connectionDto);
 	}
 
 	@RequestMapping("/get")
-	public ConnectionDto getConnectionDetails() {
+	public ConnectionDto getConnectionDetails() throws DataMigrationException {
 		return connectionService.getConnectionDetails();
 	}
 

@@ -30,7 +30,7 @@ public class DMUHdfs {
 	@Column(name = "HIVE_HOST_NAME", length = 200, nullable = true)
 	private String hiveHostName;
 
-	@Column(name = "HIVE_PORT_NMBR", length = 20, nullable = true)
+	@Column(columnDefinition = "bigint(20)", name = "HIVE_PORT_NMBR", length = 20, nullable = true)
 	private Long hivePortNmbr;
 
 	@Column(name = "IMPALA_CNCTN_FLAG", length = 1, nullable = false)
@@ -39,7 +39,7 @@ public class DMUHdfs {
 	@Column(name = "IMPALA_HOST_NAME", length = 200, nullable = true)
 	private String impalaHostName;
 
-	@Column(name = "IMPALA_PORT_NMBR", length = 20, nullable = true)
+	@Column(columnDefinition = "bigint(20)", name = "IMPALA_PORT_NMBR", length = 20, nullable = true)
 	private Long impalaPortNmbr;
 
 	@Column(name = "SPARK_CNCTN_FLAG", length = 1, nullable = true)

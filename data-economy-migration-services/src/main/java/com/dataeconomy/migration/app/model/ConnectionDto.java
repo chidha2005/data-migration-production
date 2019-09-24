@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConnectionDto {
 
+	String connectionGroup;
+
 	boolean isHiveConnEnabled;
 
 	boolean isImpalaConnEnabled;
@@ -32,6 +34,8 @@ public class ConnectionDto {
 	TGTOtherPropDto tgtOtherPropDto;
 
 	TGTFormatPropDto tgtFormatPropDto;
+
+	TGTFormatPropTempDto tgtFormatPropTempDto;
 
 	String hiveCnctnFlag;
 

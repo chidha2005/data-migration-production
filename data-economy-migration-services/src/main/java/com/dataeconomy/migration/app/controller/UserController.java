@@ -17,11 +17,8 @@ import com.dataeconomy.migration.app.model.UserDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUUsers;
 import com.dataeconomy.migration.app.service.UserService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RestController
 @RequestMapping("/datamigration/users")
-@Slf4j
 public class UserController {
 
 	@Autowired
@@ -38,7 +35,7 @@ public class UserController {
 	}
 
 	@PostMapping("/save")
-	public String saveUser(@RequestBody UserDto userDto) {
+	public boolean saveUser(@RequestBody UserDto userDto) throws Exception {
 		return userService.saveUser(userDto);
 	}
 
@@ -54,13 +51,13 @@ public class UserController {
 
 	@GetMapping("/login")
 	public DMUUsers login(@RequestParam("userName") String userName, @RequestParam("password") String password) {
-		log.info("**userName***" + userName + "password***" + password);
+		System.out.println("**userName***" + userName + "password***" + password);
 		return userService.login(userName, Base64.getEncoder().encodeToString(password.getBytes()));
 	}
 
 	@GetMapping("/resetPassword")
 	public boolean resetPassword(@RequestParam("id") String userId, @RequestParam("password") String password) {
-		log.info("**userName***" + userId + "password***" + userId);
+		System.out.println("**userName***" + userId + "password***" + userId);
 		return userService.resetPassword(userId, Base64.getEncoder().encodeToString(password.getBytes()));
 	}
 

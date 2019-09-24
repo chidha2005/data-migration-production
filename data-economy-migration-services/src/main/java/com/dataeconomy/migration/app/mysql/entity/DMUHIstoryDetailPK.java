@@ -3,6 +3,7 @@ package com.dataeconomy.migration.app.mysql.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class DMUHIstoryDetailPK implements Serializable {
 
 	private static final long serialVersionUID = 1L;

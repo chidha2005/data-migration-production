@@ -46,5 +46,22 @@ public final class Constants {
 	public static final String IMPALA_DRIVER_CLASS_NAME = "com.cloudera.impala.jdbc41.DataSource";
 	public static final String SUBMITTED = "Submitted";
 	public static final String NOT_STARTED = "Not Started";
+	public static final String SECURED = "SCRD";
+
+	public static final String AWS_TO_S3 = "AWS_TO_S3";
+	public static final String HDFS = "HDFS";
+	public static final String TARGET_FILE_PROPS = "TARGET_FILE_PROPS";
+	public static final String OTHER_PROPS = "OTHER_PROPS";
+
+	public static final String SOURCE = "SOURCE";
+	public static final String TEXT = "TEXT";
+	public static final String SEQUENCE = "SEQUENCE";
+	public static final String RECORD_COLUMNAR = "RECORD_COLUMNAR";
+	public static final String AVRO = "AVRO";
+	public static final String ORC = "ORC";
+	public static final String PARQUET = "PARQUET";
+	public static final String UN_COMPRESSED = "UN_COMPRESSED";
+	public static final String GZIP = "GZIP";
+	public static final String SRC_COMPRESSION = "SRC_COMPRESSION";
 
 }

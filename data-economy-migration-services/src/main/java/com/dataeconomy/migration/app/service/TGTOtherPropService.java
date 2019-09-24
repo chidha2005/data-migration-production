@@ -34,8 +34,7 @@ public class TGTOtherPropService {
 						.tempHiveDB(tgtOtherPropEntity.getTempHiveDB()).tempHdfsDir(tgtOtherPropEntity.getTempHdfsDir())
 						.tokenizationInd(tgtOtherPropEntity.getTokenizationInd())
 						.ptgyDirPath(tgtOtherPropEntity.getPtgyDirPath())
-						.hdfcEdgeNode(tgtOtherPropEntity.getHdfcEdgeNode())
-						.hdfsUserName(tgtOtherPropEntity.getHdfsUserName())
+						.hdfsEdgeNode(tgtOtherPropEntity.getHdfsEdgeNode())
 						.hdfsPemLocation(tgtOtherPropEntity.getHdfsPemLocation()).build();
 			}).collect(Collectors.toList());
 		} catch (Exception exception) {
@@ -57,7 +56,7 @@ public class TGTOtherPropService {
 						.tempHiveDB(tgtOtherPropEntity.getTempHiveDB()).tempHdfsDir(tgtOtherPropEntity.getTempHdfsDir())
 						.tokenizationInd(tgtOtherPropEntity.getTokenizationInd())
 						.ptgyDirPath(tgtOtherPropEntity.getPtgyDirPath())
-						.hdfcEdgeNode(tgtOtherPropEntity.getHdfcEdgeNode())
+						.hdfsEdgeNode(tgtOtherPropEntity.getHdfsEdgeNode())
 						.hdfsUserName(tgtOtherPropEntity.getHdfsUserName())
 						.hdfsPemLocation(tgtOtherPropEntity.getHdfsPemLocation()).build();
 			}
@@ -75,7 +74,7 @@ public class TGTOtherPropService {
 					.parallelJobs(tgtOtherPropDto.getParallelJobs())
 					.parallelUsrRqst(tgtOtherPropDto.getParallelUsrRqst()).tempHiveDB(tgtOtherPropDto.getTempHiveDB())
 					.tempHdfsDir(tgtOtherPropDto.getTempHdfsDir()).tokenizationInd(tgtOtherPropDto.getTokenizationInd())
-					.ptgyDirPath(tgtOtherPropDto.getPtgyDirPath()).hdfcEdgeNode(tgtOtherPropDto.getHdfcEdgeNode())
+					.ptgyDirPath(tgtOtherPropDto.getPtgyDirPath()).hdfsEdgeNode(tgtOtherPropDto.getHdfsEdgeNode())
 					.hdfsUserName(tgtOtherPropDto.getHdfsUserName())
 					.hdfsPemLocation(tgtOtherPropDto.getHdfsPemLocation()).build();
 			tgtOtherPropRepository.save(tgtOtherProp);

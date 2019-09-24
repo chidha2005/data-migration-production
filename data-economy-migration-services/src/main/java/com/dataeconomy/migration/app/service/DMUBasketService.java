@@ -149,12 +149,14 @@ public class DMUBasketService {
 		}
 	}
 
-	public boolean purgeBasketDetailsByUserId(String userId) {
+	@Transactional
+	public boolean purgeBasketDetailsByUserId(String userId) throws DataMigrationException {
 		try {
 			basketTempRepository.deleteById(userId);
+			dmuPtgyRepository.deleteByRequestedUserName(userId);
 			return true;
 		} catch (Exception e) {
-			return false;
+			throw new DataMigrationException("Unable to delete basket details ");
 		}
 	}
 
@@ -179,6 +181,16 @@ public class DMUBasketService {
 		} catch (Exception exception) {
 			return Collections.emptyList();
 		}
+	}
+
+	public boolean purgeBasketDetailsBySrNo(Long srNo) throws DataMigrationException {
+		try {
+			basketTempRepository.deleteBySrNo(srNo);
+			return true;
+		} catch (Exception exception) {
+			throw new DataMigrationException("Unable to delete basket details ");
+		}
+
 	}
 
 }

@@ -25,10 +25,12 @@ public class TGTOtherPropDto {
 
 	private String ptgyDirPath;
 
-	private String hdfcEdgeNode;
+	private String hdfsEdgeNode;
 
 	private String hdfsUserName;
 
 	private String hdfsPemLocation;
+
+	private String hadoopInstallDir;
 
 }

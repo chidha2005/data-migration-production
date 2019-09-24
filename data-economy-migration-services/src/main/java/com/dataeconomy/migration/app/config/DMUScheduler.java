@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
@@ -73,7 +72,8 @@ public class DMUScheduler {
 				if (submittedCount != 0 && submittedCount <= parallelJobsRequest) {
 					historyMainList.parallelStream().map(historyMainObj -> {
 						return cachedThreadPool.submit(() -> {
-							scriptGenerationService.proceedScriptGenerationForRequest(historyMainObj.getRequestNo());
+							scriptGenerationService.proceedScriptGenerationForRequest(historyMainObj.getRequestNo(),
+									0L);
 						});
 					}).collect(Collectors.toList()).parallelStream().forEach(future -> {
 						try {

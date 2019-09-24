@@ -42,8 +42,13 @@ public class DMUBasketController {
 	}
 
 	@DeleteMapping("/delete/{userId}")
-	public boolean purgeBasketDetails(@PathParam("userId") String userId) {
+	public boolean purgeBasketDetails(@PathParam("userId") String userId) throws DataMigrationException {
 		return dmuBasketService.purgeBasketDetailsByUserId(userId);
+	}
+
+	@DeleteMapping("/delete/srNo/{srNo}")
+	public boolean purgeBasketDetailsBySrNo(@PathParam("srNo") Long srNo) throws DataMigrationException {
+		return dmuBasketService.purgeBasketDetailsBySrNo(srNo);
 	}
 
 	@GetMapping("/search")

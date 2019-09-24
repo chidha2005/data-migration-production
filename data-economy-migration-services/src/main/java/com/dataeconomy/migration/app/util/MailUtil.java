@@ -14,41 +14,39 @@ import javax.mail.internet.MimeMessage;
 
 public class MailUtil {
 
-	public  String getFileName() throws IOException 
-	{
+	public String getFileName() throws IOException {
 		return getClass().getClassLoader().getResource("application.properties").getFile();
 	}
-	public static void sendMail(String msg,String email,String subject) throws Exception
-	{
-		/*MailUtil m = new MailUtil();
-		InputStream input = new FileInputStream(m.getFileName());
-		Properties prop = new Properties();
-		prop.load(input);*/
-		//System.out.println("Email HOST***!"+prop.getProperty("SMTP_HOST"));
-		Properties props = new Properties();    
-		props.put("mail.smtp.host", "smtp.gmail.com");        
-		props.put("mail.smtp.auth", "true");    
-		props.put("mail.smtp.port", "587");   
-		props.put("mail.smtp.starttls.enable", "true");   
 
+	public static void sendMail(String msg, String email, String subject) throws Exception {
+		/*
+		 * MailUtil m = new MailUtil(); InputStream input = new
+		 * FileInputStream(m.getFileName()); Properties prop = new Properties();
+		 * prop.load(input);
+		 */
+		// System.out.println("Email HOST***!"+prop.getProperty("SMTP_HOST"));
+		Properties props = new Properties();
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.port", "587");
+		props.put("mail.smtp.starttls.enable", "true");
 
-		//get Session   
-		Session session = Session.getDefaultInstance(props,    
-				new javax.mail.Authenticator() {    
-			protected PasswordAuthentication getPasswordAuthentication() {    
-				return new PasswordAuthentication("dataeconomyportal","Admin@123");  
-			}    
-		});    
+		// get Session
+		Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication("dataeconomyportal", "Admin@123");
+			}
+		});
 		try {
 			new Thread(new Runnable() {
 
 				public void run() {
 					try {
-						MimeMessage message = new MimeMessage(session);    
-						message.addRecipient(Message.RecipientType.TO,new InternetAddress(email));    
-						message.setSubject(subject);    
-						message.setContent(msg,"text/html"); 
-						Transport.send(message);  
+						MimeMessage message = new MimeMessage(session);
+						message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+						message.setSubject(subject);
+						message.setContent(msg, "text/html");
+						Transport.send(message);
 						System.out.println("Email sent!");
 					} catch (AddressException e) {
 						// TODO Auto-generated catch block
@@ -66,17 +64,15 @@ public class MailUtil {
 				}
 			}).start();
 
-			//   System.out.println("Email sent.");
+			// System.out.println("Email sent.");
 		} catch (Exception ex) {
 			System.out.println("Failed to sent email.");
-		}
-		finally
-		{
+		} finally {
 		}
 
 	}
-	public static void sendUseralert(String username,String email,String password) throws Exception
-	{
+
+	public static void sendUseralert(String username, String email, String password) throws Exception {
 		// message contains HTML markups
 		String message = "<html>";
 		message += "<table align='center' cellspacing='30' width='100%' height='100%' style='background-color:#009688; font-family:Open Sans,Helvetica,Arial,sans-serif; font-size:14px; color:black; line-height:20px'>";
@@ -93,8 +89,9 @@ public class MailUtil {
 		message += "<table width='100%' cellspacing='0' cellpadding='25' style='background:#ffffff'>";
 		message += "<tbody>";
 		message += "<tr>";
-		message += "Hi <b><u>"+username+" </u></b> Your Data Migration Tool user created successfully with username:"+username+""
-				+ "  and password:"+password+" Please reset your password using resetpassword link.<b><u>" 
+		message += "Hi <b><u>" + username
+				+ " </u></b> Your Data Migration Tool user created successfully with username:" + username + ""
+				+ "  and password:" + password + " Please reset your password using resetpassword link.<b><u>"
 				+ " </u></b>  <b>Please login using: <a href='http://localhost:8080/DataMigration'>http://localhost:8080/DataMigration</a>  <u>";
 		message += "</tr>";
 		message += "</tbody>";
@@ -126,11 +123,11 @@ public class MailUtil {
 		message += "</tbody>";
 		message += "</table>";
 		message += "</html>";
-		sendMail(message,email,"Data Migration Tool");
+		sendMail(message, email, "Data Migration Tool");
 	}
-	//Forgot password
-	public static void senForgotPasswordalert(String username,String email,String password) throws Exception
-	{
+
+	// Forgot password
+	public static void senForgotPasswordalert(String username, String email, String password) throws Exception {
 		// message contains HTML markups
 		String message = "<html>";
 		message += "<table align='center' cellspacing='30' width='100%' height='100%' style='background-color:#009688; font-family:Open Sans,Helvetica,Arial,sans-serif; font-size:14px; color:black; line-height:20px'>";
@@ -147,8 +144,8 @@ public class MailUtil {
 		message += "<table width='100%' cellspacing='0' cellpadding='25' style='background:#ffffff'>";
 		message += "<tbody>";
 		message += "<tr>";
-		message += "Hi <b><u>"+username+" </u></b> Your Password For username:"+username+""
-				+ "  is  :"+password+" <b><u>" 
+		message += "Hi <b><u>" + username + " </u></b> Your Password For username:" + username + "" + "  is  :"
+				+ password + " <b><u>"
 				+ " </u></b>  <b>Please login using: <a href='http://localhost:8080/DataMigration'>http://localhost:8080/DataMigration</a>  <u>";
 		message += "</tr>";
 		message += "</tbody>";
@@ -180,8 +177,7 @@ public class MailUtil {
 		message += "</tbody>";
 		message += "</table>";
 		message += "</html>";
-		sendMail(message,email,"Data Migration Tool");
+		sendMail(message, email, "Data Migration Tool");
 	}
-
 
 }

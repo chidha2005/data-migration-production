@@ -23,7 +23,7 @@ public class SwaggerConfig {
 	}
 
 	private ApiInfo apiEndPointsInfo() {
-		return new ApiInfoBuilder().title("Spring Boot REST API").description("Data Migration Management REST API")
+		return new ApiInfoBuilder().title("Data Migration Utility REST API").description("Data Migration Management REST API")
 				.contact(new Contact("Siva Kondamadugula", "http://www.dataeconomysolutions.com",
 						"info@dataeconomysolutions.com"))
 				.build();

@@ -41,12 +41,15 @@ public class TGTOtherProp {
 	private String ptgyDirPath;
 
 	@Column(name = "HDFS_EDGE_NODE", length = 200, nullable = true)
-	private String hdfcEdgeNode;
+	private String hdfsEdgeNode;
 
 	@Column(name = "HDFS_USER_NAME", length = 50, nullable = true)
 	private String hdfsUserName;
 
 	@Column(name = "HDFS_PEM_LOCATION", length = 100, nullable = true)
 	private String hdfsPemLocation;
+
+	@Column(name = "HADOOP_INSTALL_DIR", length = 100, nullable = true)
+	private String hadoopInstallDir;
 
 }

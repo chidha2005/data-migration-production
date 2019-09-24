@@ -15,4 +15,8 @@ public interface HistoryDetailRepository extends JpaRepository<DMUHistoryDetail,
 
 	@Query("SELECT detail from DMUHistoryDetail detail where detail.dmuHIstoryDetailPK.requestNo = :requestNo")
 	List<DMUHistoryDetail> findHistoryDetailsByRequestNumber(@Param("requestNo") String requestNo);
+
+	@Query("SELECT detail from DMUHistoryDetail detail where detail.dmuHIstoryDetailPK.requestNo = :requestNo AND detail.dmuHIstoryDetailPK.srNo = :srNo")
+	List<DMUHistoryDetail> findHistoryDetailsByRequestNumberAndSrNo(@Param("requestNo") String requestNo,
+			@Param("srNo") Long srNo);
 }

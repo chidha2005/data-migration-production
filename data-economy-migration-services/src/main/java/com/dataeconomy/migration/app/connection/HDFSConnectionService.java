@@ -2,13 +2,13 @@ package com.dataeconomy.migration.app.connection;
 
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.stereotype.Service;
 
 import com.dataeconomy.migration.app.conn.service.HiveConnectionService;
@@ -16,6 +16,10 @@ import com.dataeconomy.migration.app.conn.service.ImaplaConnectionService;
 import com.dataeconomy.migration.app.conn.service.SparkConnectionService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
+import com.dataeconomy.migration.app.mysql.entity.DMUAuthentication;
+import com.dataeconomy.migration.app.mysql.entity.DMUHdfs;
+import com.dataeconomy.migration.app.mysql.repository.AuthenticationRepository;
+import com.dataeconomy.migration.app.mysql.repository.HDFSRepository;
 import com.dataeconomy.migration.app.util.Constants;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +35,9 @@ public class HDFSConnectionService {
 	private HiveConnectionService hiveConnectionService;
 
 	@Autowired
+	private HDFSRepository hdfsRepository;
+
+	@Autowired
 	private ImaplaConnectionService imaplaConnectionService;
 
 	@Autowired
@@ -39,11 +46,32 @@ public class HDFSConnectionService {
 	@Autowired
 	private DMUConnectionPool dmuConnectionPool;
 
+	@Autowired
+	private AuthenticationRepository authenticationRepository;
+
 	private DataSource hiveDataSource;
 
 	private DataSource impalaDataSource;
 
 	private DataSource sparkDataSource;
+
+	@PostConstruct
+	public void initDataSourceConfig() {
+		try {
+			log.info(" initializing datasource connections while server startt up ");
+			Optional<DMUHdfs> dmuHdfs = hdfsRepository.findById(1L);
+			Optional<DMUAuthentication> dmuAuthentication = authenticationRepository.findById(1L);
+			ConnectionDto connectionDto = ConnectionDto.builder().build();
+			if (dmuAuthentication.isPresent()) {
+				populateDMUAuthenticationProperties(connectionDto, dmuAuthentication);
+			}
+			if (dmuHdfs.isPresent()) {
+				populateDMUHdfsProperties(connectionDto, dmuHdfs);
+			}
+		} catch (Exception exception) {
+			log.error("Exception while creating datasources while server up");
+		}
+	}
 
 	public void populateDataSourceConfig(ConnectionDto connectionDto) throws Exception {
 		if (StringUtils.equalsIgnoreCase(Constants.HIVE, connectionDto.getConnectionType())) {
@@ -122,6 +150,35 @@ public class HDFSConnectionService {
 			hiveDataSource = dataSource;
 		}
 		return dataSource;
+	}
+
+	private void populateDMUAuthenticationProperties(ConnectionDto connectionDto,
+			Optional<DMUAuthentication> dmuAuthentication) {
+		if (dmuAuthentication.isPresent()) {
+			DMUAuthentication dmuAuthenticationObj = dmuAuthentication.get();
+			connectionDto.setAuthenticationType(dmuAuthenticationObj.getAuthenticationType());
+			connectionDto.setLdapCnctnFlag(dmuAuthenticationObj.getLdapCnctnFlag());
+			connectionDto.setKerberosCnctnFlag(dmuAuthenticationObj.getKerberosCnctnFlag());
+		}
+	}
+
+	private void populateDMUHdfsProperties(ConnectionDto connectionDto, Optional<DMUHdfs> dmuHdfs) {
+		if (dmuHdfs.isPresent()) {
+			DMUHdfs dmuHdfsObj = dmuHdfs.get();
+			connectionDto.setHiveCnctnFlag(dmuHdfsObj.getHiveCnctnFlag());
+			connectionDto.setHiveHostName(dmuHdfsObj.getHiveHostName());
+			connectionDto.setHivePortNmbr(
+					dmuHdfsObj.getHivePortNmbr() != null ? String.valueOf(dmuHdfsObj.getHivePortNmbr()) : "");
+
+			connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
+			connectionDto.setImpalaPortNmbr(
+					dmuHdfsObj.getImpalaPortNmbr() != null ? String.valueOf(dmuHdfsObj.getImpalaPortNmbr()) : "");
+			connectionDto.setImpalaHostName(dmuHdfsObj.getImpalaHostName());
+
+			connectionDto.setSqlWhDir(dmuHdfsObj.getSqlWhDir());
+			connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
+			connectionDto.setSparkCnctnFlag(dmuHdfsObj.getSparkCnctnFlag());
+		}
 	}
 
 }

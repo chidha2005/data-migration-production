@@ -33,19 +33,27 @@ public class ImaplaConnectionService {
 	public Optional<String> getImpalaConnectionDetails(ConnectionDto connectionDto) throws DataMigrationException {
 		try {
 			String impalaConnectionString = StringUtils.EMPTY;
-			if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.UNSECURED)) {
+			if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.UNSECURED)
+					|| StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), "UNSCRD")) {
 				impalaConnectionString = MessageFormat.format(impalaConnectionUnSecuredUrl,
 						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()));
-			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.LDAP)) {
-				impalaConnectionString = MessageFormat.format(impalaConnectionLdapUrl,
-						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
-						connectionDto.getLdapUserName(), connectionDto.getLdapDomain(),
-						connectionDto.getLdapUserPassw());
-			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.KERBEROS)) {
-				impalaConnectionString = MessageFormat.format(impalaConnectionkerberosUrl,
-						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
-						connectionDto.getKerberosHostRealm(), connectionDto.getKerberosHostFqdn(),
-						connectionDto.getKerberosServiceName());
+			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.SECURED)
+					|| StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), "UNSCRD")) {
+				impalaConnectionString = MessageFormat.format(impalaConnectionUnSecuredUrl,
+						connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()));
+				if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.LDAP)) {
+					impalaConnectionString = MessageFormat.format(impalaConnectionLdapUrl,
+							connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
+							connectionDto.getLdapUserName(), connectionDto.getLdapDomain(),
+							connectionDto.getLdapUserPassw());
+				} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.KERBEROS)) {
+					impalaConnectionString = MessageFormat.format(impalaConnectionkerberosUrl,
+							connectionDto.getImpalaHostName(), String.valueOf(connectionDto.getImpalaPortNmbr()),
+							connectionDto.getKerberosHostRealm(), connectionDto.getKerberosHostFqdn(),
+							connectionDto.getKerberosServiceName());
+				} else {
+					throw new Exception("Not a valid Imapla Authentication Details!");
+				}
 			} else {
 				throw new Exception("Not a valid Imapla Authentication Details!");
 			}
