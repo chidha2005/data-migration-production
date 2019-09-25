@@ -4,9 +4,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import javax.sql.DataSource;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -90,14 +93,38 @@ public class ScriptGenerationService {
 							// a Hyperlink created in the screen for the ”Failed” status value to this error
 							// file.
 							return;
-						} else if (Constants.YES.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())) {
-							dmuHistoryDetail.setStatus(Constants.NEW_SCENARIO);
-							historyDetailRepository.save(dmuHistoryDetail);
-						} else if (StringUtils.isNotBlank(dmuHistoryDetail.getFilterCondition()) && Constants.YES
-								.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
+						} else {
 							proceedScriptGenerationForRequestHelper(dmuHistoryDetail, hdfspath, connectionDto,
 									requestNo);
-							dmuHistoryDetail.setStatus(Constants.UNKNOWN_CASE);
+						}
+					} else if (Constants.YES.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())) {
+						dmuHistoryDetail.setStatus(Constants.NEW_SCENARIO);
+						historyDetailRepository.save(dmuHistoryDetail);
+					} else if (StringUtils.isNotBlank(dmuHistoryDetail.getFilterCondition())
+							&& Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
+						try {
+							DataSource dataSource = hdfsConnectionService.getValidDataSource(Constants.SMALLQUERY);
+							String path = "";
+							String stored = "";
+							path = new JdbcTemplate(dataSource).query(
+									"SHOW CREATE TABLE " + dmuHistoryDetail.getSchemaName(),
+									new ResultSetExtractor<String>() {
+
+										@Override
+										public String extractData(ResultSet rs)
+												throws SQLException, DataAccessException {
+											while (rs.next()) {
+												String showTable = rs.getString(Constants.HDFS_LOCATION);
+												String storedAs = rs.getString(Constants.STORED_AS);
+												if (StringUtils.isNotBlank(showTable)) {
+													//path = (showTable.substring(3, showTable.length() - 1).trim());
+												}
+											}
+											return null;
+										}
+									});
+						} catch (Exception exception) {
+							dmuHistoryDetail.setStatus(Constants.FAILED);
 							historyDetailRepository.save(dmuHistoryDetail);
 						}
 					}
@@ -248,6 +275,38 @@ public class ScriptGenerationService {
 							return null;
 						}
 					});
+		} catch (Exception exception) {
+			dmuHistoryDetail.setStatus(Constants.FAILED);
+			historyDetailRepository.save(dmuHistoryDetail);
+			log.error(
+					"Exception occurred at ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService :: {}   ",
+					ExceptionUtils.getStackTrace(exception));
+			// TODO application.log created and store it in server log with date and time
+			return null;
+		}
+	}
+
+	private String invokeHDFSServiceForFilterCondition(DMUHistoryDetail dmuHistoryDetail) {
+		log.info(" called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService ");
+		try {
+			Map<String, String> map = new HashMap<>();
+			new JdbcTemplate(hdfsConnectionService.getValidDataSource(Constants.SMALLQUERY)).query(
+					" SELECT COUNT(*) FROM" + dmuHistoryDetail.getSchemaName() + "." + dmuHistoryDetail.getTableName()
+							+ "WHERE " + dmuHistoryDetail.getFilterCondition(),
+					new ResultSetExtractor<String>() {
+
+						@Override
+						public String extractData(ResultSet rs) throws SQLException, DataAccessException {
+							while (rs.next()) {
+								String showTable = rs.getString(Constants.HDFS_LOCATION);
+								String storedAs = rs.getString(Constants.STORED_AS);
+								map.put("HDFS_PATH", (showTable.substring(3, showTable.length() - 1).trim()));
+								map.put("STORED_AS", (showTable.substring(3, storedAs.length() - 1).trim()));
+							}
+							return null;
+						}
+					});
+			return null;
 		} catch (Exception exception) {
 			dmuHistoryDetail.setStatus(Constants.FAILED);
 			historyDetailRepository.save(dmuHistoryDetail);

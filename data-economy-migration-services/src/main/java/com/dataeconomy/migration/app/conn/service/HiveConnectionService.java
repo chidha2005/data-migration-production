@@ -28,28 +28,46 @@ public class HiveConnectionService {
 	@Value("${hive.connection.ldap.url}")
 	public String hiveConnectionLdapUrl;
 
+	@Value("${hive.connection.ldap.domain.url}")
+	public String hiveConnectionLdapDomainUrl;
+
 	@Value("${hive.connection.kerberos.url}")
 	public String hiveConnectionkerberosUrl;
 
 	public Optional<String> getHiveConnectionDetails(ConnectionDto connectionDto) throws Exception {
 		try {
-			log.info(" HiveConnectionService :: getHiveConnectionDetails :: hiveConnString {}",
+			log.info(" HiveConnectionService :: getHiveConnectionDetails :: connectionDto {}",
 					ObjectUtils.toString(connectionDto));
 			String hiveConnectionString = StringUtils.EMPTY;
 			if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.UNSECURED)
 					|| StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), "UNSCRD")) {
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: UNSECURED : getAuthenticationType {}",
+						connectionDto.getAuthenticationType());
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: UNSECURED : getCredentialStrgType {}",
+						connectionDto.getCredentialStrgType());
 				hiveConnectionString = MessageFormat.format(hiveConnectionUnSecuredUrl, connectionDto.getHiveHostName(),
 						String.valueOf(connectionDto.getHivePortNmbr()));
 				log.info(" HiveConnectionService :: getHiveConnectionDetails :: unsecured url {}",
 						hiveConnectionString);
 			} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.SECURED)
 					|| StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), "UNSCRD")) {
-				if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.LDAP)) {
-					hiveConnectionString = MessageFormat.format(hiveConnectionLdapUrl, connectionDto.getHiveHostName(),
-							String.valueOf(connectionDto.getHivePortNmbr()), connectionDto.getLdapUserName(),
-							connectionDto.getLdapDomain(), connectionDto.getLdapUserPassw());
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: SECURED : getAuthenticationType {}",
+						connectionDto.getAuthenticationType());
+				log.info(" HiveConnectionService :: getHiveConnectionDetails :: SECURED : getCredentialStrgType {}",
+						connectionDto.getCredentialStrgType());
+				if (StringUtils.equalsIgnoreCase(connectionDto.getCredentialStrgType(), Constants.LDAP)) {
+					if (StringUtils.isNotBlank(connectionDto.getDomain())) {
+						hiveConnectionString = MessageFormat.format(hiveConnectionLdapDomainUrl,
+								connectionDto.getHiveHostName(), String.valueOf(connectionDto.getHivePortNmbr()),
+								connectionDto.getLdapUserName(), connectionDto.getLdapDomain(),
+								connectionDto.getLdapUserPassw());
+					} else {
+						hiveConnectionString = MessageFormat.format(hiveConnectionLdapUrl,
+								connectionDto.getHiveHostName(), String.valueOf(connectionDto.getHivePortNmbr()),
+								connectionDto.getLdapUserName(), connectionDto.getLdapUserPassw());
+					}
 					log.info(" HiveConnectionService :: getHiveConnectionDetails :: ldap url {}", hiveConnectionString);
-				} else if (StringUtils.equalsIgnoreCase(connectionDto.getAuthenticationType(), Constants.KERBEROS)) {
+				} else if (StringUtils.equalsIgnoreCase(connectionDto.getCredentialStrgType(), Constants.KERBEROS)) {
 					hiveConnectionString = MessageFormat.format(hiveConnectionkerberosUrl,
 							connectionDto.getHiveHostName(), String.valueOf(connectionDto.getHivePortNmbr()),
 							connectionDto.getKerberosHostRealm(), connectionDto.getKerberosHostFqdn(),

@@ -175,7 +175,7 @@ public class DMUBasketService {
 										.targetS3Bucket(searchParam + "/" + rs.getString(1))
 										.incrementalFlag(Constants.NO).incrementalClmn(null).build());
 							}
-							return Collections.emptyList();
+							return dmuBasketDtoList;
 						}
 					});
 		} catch (Exception exception) {

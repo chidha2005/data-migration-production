@@ -240,13 +240,13 @@ public class ConnectionService {
 	private void saveDMUHdfsEntityProperties(ConnectionDto connectionDto) {
 		DMUHdfs dmuHdfsEntity = hdfsRepository.getOne(1L);
 		if (dmuHdfsEntity != null) {
-			dmuHdfsEntity.setHiveCnctnFlag(null);
+			dmuHdfsEntity.setHiveCnctnFlag(Constants.NO);
 			dmuHdfsEntity.setHiveHostName(null);
 			dmuHdfsEntity.setHivePortNmbr(null);
-			dmuHdfsEntity.setImpalaCnctnFlag(null);
+			dmuHdfsEntity.setImpalaCnctnFlag(Constants.NO);
 			dmuHdfsEntity.setImpalaHostName(null);
 			dmuHdfsEntity.setImpalaPortNmbr(null);
-			dmuHdfsEntity.setSparkCnctnFlag(null);
+			dmuHdfsEntity.setSparkCnctnFlag(Constants.NO);
 			dmuHdfsEntity.setSqlWhDir(null);
 			dmuHdfsEntity.setHiveMsUri(null);
 
@@ -258,7 +258,7 @@ public class ConnectionService {
 			if (connectionDto.isImpalaConnEnabled()) {
 				dmuHdfsEntity.setImpalaCnctnFlag(Constants.YES);
 				dmuHdfsEntity.setImpalaHostName(connectionDto.getImpalaHostName());
-				dmuHdfsEntity.setImpalaPortNmbr(NumberUtils.toLong(connectionDto.getHivePortNmbr(), 0L));
+				dmuHdfsEntity.setImpalaPortNmbr(NumberUtils.toLong(connectionDto.getImpalaPortNmbr(), 0L));
 			}
 			if (connectionDto.isSparkConnEnabled()) {
 				dmuHdfsEntity.setSparkCnctnFlag(Constants.YES);

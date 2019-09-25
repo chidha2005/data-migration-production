@@ -55,7 +55,6 @@ public class AWSConnectionService {
 			if (dmuS3.isPresent()) {
 				ConnectionDto connectionDto = ConnectionDto.builder().build();
 				populateDMUS3Properties(connectionDto, dmuS3);
-				connectionService.validateConnection(connectionDto);
 				Optional<BasicSessionCredentials> basicSessionCredentialsOpt = retrieveAWSCredentials(connectionDto);
 				if (basicSessionCredentialsOpt.isPresent()) {
 					basicSessionCredentials = basicSessionCredentialsOpt.get();

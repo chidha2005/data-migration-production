@@ -19,7 +19,7 @@ public class DMUReconDetailController {
 	private DMUReconDetailService dmuReconDetailService;
 
 	@GetMapping("/details/{requestNo}")
-	public DMUReconDetailDto getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
+	public List<DMUReconDetailDto> getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
 		return dmuReconDetailService.getReconDetailsBySearch(requestNo);
 	}
 

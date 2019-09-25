@@ -45,25 +45,27 @@ public class DMUReconDetailService {
 		}
 	}
 
-	public DMUReconDetailDto getReconDetailsBySearch(String requestNo) {
-		log.info(" DMUReconDetailService :: getReconDetailsBySearch ");
+	public List<DMUReconDetailDto> getReconDetailsBySearch(String requestNo) {
+		log.info(" DMUReconDetailService :: getReconDetailsBySearch :: requestNo :: {} ", requestNo);
 		try {
-			Optional<DMUReconDetail> reconDetailsEntity = dmuReconDetailRepository.findById(requestNo);
-			if (reconDetailsEntity.isPresent()) {
-				DMUReconDetail dmuReconDetail = reconDetailsEntity.get();
-				return DMUReconDetailDto.builder().srNo(dmuReconDetail.getDmuHIstoryDetailPK().getSrNo())
-						.filterCondition(dmuReconDetail.getFilterCondition()).schemaName(dmuReconDetail.getSchemaName())
-						.tableName(dmuReconDetail.getTableName()).targetS3Bucket(dmuReconDetail.getTargetS3Bucket())
-						.incrementalFlag(dmuReconDetail.getIncrementalFlag())
-						.incrementalColumn(dmuReconDetail.getIncrementalColumn())
-						.sourceCount(dmuReconDetail.getSourceCount()).targetCount(dmuReconDetail.getTargetCount())
-						.status(dmuReconDetail.getStatus()).build();
+			List<DMUReconDetail> reconDetailsEntityList = dmuReconDetailRepository.findByGivenRequestNo(requestNo);
+			if (reconDetailsEntityList != null && reconDetailsEntityList.size() > 0) {
+				return reconDetailsEntityList.stream().map(dmuReconDetail -> {
+					return DMUReconDetailDto.builder().srNo(dmuReconDetail.getDmuHIstoryDetailPK().getSrNo())
+							.filterCondition(dmuReconDetail.getFilterCondition())
+							.schemaName(dmuReconDetail.getSchemaName()).tableName(dmuReconDetail.getTableName())
+							.targetS3Bucket(dmuReconDetail.getTargetS3Bucket())
+							.incrementalFlag(dmuReconDetail.getIncrementalFlag())
+							.incrementalColumn(dmuReconDetail.getIncrementalColumn())
+							.sourceCount(dmuReconDetail.getSourceCount()).targetCount(dmuReconDetail.getTargetCount())
+							.status(dmuReconDetail.getStatus()).build();
+				}).collect(Collectors.toList());
 			}
-			return DMUReconDetailDto.builder().build();
+			return Collections.emptyList();
 		} catch (Exception exception) {
 			log.info(" Exception occured at DMUReconDetailService :: getReconDetailsBySearch {} ",
 					ExceptionUtils.getStackTrace(exception));
-			return DMUReconDetailDto.builder().build();
+			return Collections.emptyList();
 		}
 	}
 

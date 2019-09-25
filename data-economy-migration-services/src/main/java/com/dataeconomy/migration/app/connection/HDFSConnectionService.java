@@ -21,6 +21,7 @@ import com.dataeconomy.migration.app.mysql.entity.DMUHdfs;
 import com.dataeconomy.migration.app.mysql.repository.AuthenticationRepository;
 import com.dataeconomy.migration.app.mysql.repository.HDFSRepository;
 import com.dataeconomy.migration.app.util.Constants;
+import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,6 +69,7 @@ public class HDFSConnectionService {
 			if (dmuHdfs.isPresent()) {
 				populateDMUHdfsProperties(connectionDto, dmuHdfs);
 			}
+			populateDataSourceConfig(connectionDto);
 		} catch (Exception exception) {
 			log.error("Exception while creating datasources while server up");
 		}
@@ -78,7 +80,8 @@ public class HDFSConnectionService {
 			Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
 			if (hiveConnStringOpt.isPresent()) {
 				String hiveConnString = hiveConnStringOpt.get();
-				retrieveDataSource(Constants.HIVE_CONN_POOL, Constants.HIVE_DRIVER_CLASS_NAME, hiveConnString);
+				hiveDataSource = retrieveDataSource(Constants.HIVE_CONN_POOL, Constants.HIVE_DRIVER_CLASS_NAME,
+						hiveConnString);
 				log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for HIVE connection Validation ");
@@ -88,7 +91,8 @@ public class HDFSConnectionService {
 			Optional<String> impalaConnStringOpt = imaplaConnectionService.getImpalaConnectionDetails(connectionDto);
 			if (impalaConnStringOpt.isPresent()) {
 				String impalaConnString = impalaConnStringOpt.get();
-				retrieveDataSource(Constants.IMPALA, Constants.IMPALA_DRIVER_CLASS_NAME, impalaConnString);
+				impalaDataSource = retrieveDataSource(Constants.IMPALA, Constants.IMPALA_DRIVER_CLASS_NAME,
+						impalaConnString);
 				log.info(" ConnectionService :: validateConnection :: impalaConnString {}", impalaConnString);
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for IMPALA connection Validation ");
@@ -105,13 +109,13 @@ public class HDFSConnectionService {
 		}
 	}
 
-	private void retrieveDataSource(String connPoolName, String hiveDriverClassName, String hiveConnString)
+	private HikariDataSource retrieveDataSource(String connPoolName, String hiveDriverClassName, String hiveConnString)
 			throws DataMigrationException {
 		log.error(
 				"called => HDFSConnectionService  :: retrieveDataSource :: connPoolName {} , hiveDriverClassName {} , hiveConnString {} ",
 				connPoolName, hiveDriverClassName, hiveConnString);
 		try {
-			dmuConnectionPool.getDataSourceFromConfig(connPoolName, hiveDriverClassName, hiveConnString);
+			return dmuConnectionPool.getDataSourceFromConfig(connPoolName, hiveDriverClassName, hiveConnString);
 		} catch (Exception exception) {
 			log.error(
 					"Exception occured at HDFSConnectionService  :: retrieveDataSource :: connPoolName {} , hiveDriverClassName {} , hiveConnString {} exception \n {} ",
@@ -145,6 +149,7 @@ public class HDFSConnectionService {
 					ExceptionUtils.getStackTrace(exception));
 		}
 		if (dataSource == null) {
+			log.info("Datasource is not configured retrieving the default data source (hive) ");
 			dataSource = dmuConnectionPool.getDataSourceFromConfig(Constants.DEFAULT_HIVE_POOL,
 					Constants.HIVE_DRIVER_CLASS_NAME, hiveConnUrl);
 			hiveDataSource = dataSource;

@@ -63,5 +63,6 @@ public final class Constants {
 	public static final String UN_COMPRESSED = "UN_COMPRESSED";
 	public static final String GZIP = "GZIP";
 	public static final String SRC_COMPRESSION = "SRC_COMPRESSION";
+	public static final String STORED_AS = "STORED_AS";
 
 }
