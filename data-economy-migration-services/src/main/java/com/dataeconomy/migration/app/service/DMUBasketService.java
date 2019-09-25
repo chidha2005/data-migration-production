@@ -3,6 +3,7 @@ package com.dataeconomy.migration.app.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,11 +25,13 @@ import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUBasketTemp;
 import com.dataeconomy.migration.app.mysql.entity.DMUHIstoryDetailPK;
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
+import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
 import com.dataeconomy.migration.app.mysql.entity.DMUPtgyPK;
 import com.dataeconomy.migration.app.mysql.entity.DMUPtgyTemp;
 import com.dataeconomy.migration.app.mysql.entity.DMUReconDetail;
 import com.dataeconomy.migration.app.mysql.entity.DMUReconMain;
 import com.dataeconomy.migration.app.mysql.repository.BasketTempRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUPgtyRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUPtgyTempRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUReconDetailRepository;
@@ -60,6 +63,9 @@ public class DMUBasketService {
 
 	@Autowired
 	private DMUReconDetailRepository dmuReconDetailRepository;
+
+	@Autowired
+	private DMUHistoryMainRepository dmuHistoryMainRepository;
 
 	@Autowired
 	private DMUPtgyTempRepository dmuPtgyRepository;
@@ -118,14 +124,12 @@ public class DMUBasketService {
 		try {
 			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
 					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
-						basketTempRepository.save(
-								DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo()).userId(dmuBasketDto.getUserId())
-										.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
-										.filterCondition(dmuBasketDto.getFilterCondition())
-										.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
-										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
-										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
-										.labelName(dmuBasketDto.getLabelName()).build());
+
+						dmuHistoryMainRepository.save(DMUHistoryMain.builder().userId(dmuBasketDto.getUserId())
+								.requestedTime(LocalDateTime.now()).status(Constants.SUBMITTED)
+								.requestType(dmuBasketDto.getRequestType()).requestNo(dmuBasketDto.getLabelName())
+								.tknztnEnabled(dmuBasketDto.isTknztnEnabled() ? Constants.YES : Constants.NO)
+								.tknztnFilePath(dmuBasketDto.getTknztnFilePath()).build());
 
 						reconMainRepository.save(DMUReconMain.builder().userId(dmuBasketDto.getUserId())
 								.status(Constants.NOT_STARTED).requestType(dmuBasketDto.getRequestType())
