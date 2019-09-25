@@ -35,6 +35,8 @@ public class HomeService {
 			if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(reconMainCountList)) {
 				reconMainCountList.stream().forEach(reconMainObj -> {
 					reconAndRequestStatusDto.getReconMainCount().put(reconMainObj.getStatus(), reconMainObj.getCount());
+					reconAndRequestStatusDto.setReconMainTotalCount(
+							reconAndRequestStatusDto.getReconMainTotalCount() + reconMainObj.getCount());
 				});
 			}
 
@@ -42,6 +44,8 @@ public class HomeService {
 				reconHistoryMainCountList.stream().forEach(reconMainObj -> {
 					reconAndRequestStatusDto.getReconHistoryMainCount().put(reconMainObj.getStatus(),
 							reconMainObj.getCount());
+					reconAndRequestStatusDto.setReconHistoryMainTotalCount(
+							reconAndRequestStatusDto.getReconHistoryMainTotalCount() + reconMainObj.getCount());
 				});
 			}
 

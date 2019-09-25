@@ -3,12 +3,14 @@ package com.dataeconomy.migration.app.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,7 +38,10 @@ import com.dataeconomy.migration.app.mysql.repository.HistoryDetailRepository;
 import com.dataeconomy.migration.app.util.Constants;
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class DMUBasketService {
 
 	@Autowired
@@ -78,7 +83,7 @@ public class DMUBasketService {
 
 	}
 
-	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public synchronized boolean saveBasketDetails(List<DMUBasketDto> dmuBasketDtoList, String userName)
 			throws DataMigrationException {
 		try {
@@ -101,7 +106,7 @@ public class DMUBasketService {
 
 						reconMainRepository.save(DMUReconMain.builder().userId(dmuBasketDto.getUserId())
 								.status(Constants.NOT_STARTED).requestType(dmuBasketDto.getRequestType())
-								.requestNo(dmuBasketDto.getLabelName()).build());
+								.requestedTime(LocalDateTime.now()).requestNo(dmuBasketDto.getLabelName()).build());
 
 						historyDetailRepository.save(DMUHistoryDetail.builder()
 								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
@@ -126,7 +131,9 @@ public class DMUBasketService {
 			basketTempRepository.deleteById(userName);
 			dmuPtgyRepository.deleteByRequestedUserName(userName);
 			return true;
-		} catch (Exception e) {
+		} catch (Exception exception) {
+			log.info(" Exception occured at DMUBasketService :: saveBasketDetails {} ",
+					ExceptionUtils.getStackTrace(exception));
 			throw new DataMigrationException("Unable to persist basket details to database ");
 		}
 

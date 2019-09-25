@@ -1,6 +1,5 @@
 package com.dataeconomy.migration.app.service;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;

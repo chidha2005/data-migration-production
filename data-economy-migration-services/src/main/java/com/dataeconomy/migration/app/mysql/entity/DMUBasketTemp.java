@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class DMUBasketTemp {
 
 	@Id
-	@GeneratedValue
+	//@GeneratedValue
 	@Column(name = "SR_NO", length = 11, nullable = false)
 	private Long srNo;
 

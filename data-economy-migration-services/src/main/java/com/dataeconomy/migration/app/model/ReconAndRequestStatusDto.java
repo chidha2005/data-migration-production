@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 
 public class ReconAndRequestStatusDto {
 
+	Long reconMainTotalCount = 0L;
+	Long reconHistoryMainTotalCount = 0L;
 	Map<String, Long> reconMainCount = Maps.newLinkedHashMap();
 	Map<String, Long> reconHistoryMainCount = Maps.newLinkedHashMap();
 
@@ -27,8 +29,25 @@ public class ReconAndRequestStatusDto {
 
 	@Override
 	public String toString() {
-		return "ReconAndRequestStatusDto [reconMainCount=" + reconMainCount + ", reconHistoryMainCount="
+		return "ReconAndRequestStatusDto [reconMainTotalCount=" + reconMainTotalCount + ", reconHistoryMainTotalCount="
+				+ reconHistoryMainTotalCount + ", reconMainCount=" + reconMainCount + ", reconHistoryMainCount="
 				+ reconHistoryMainCount + "]";
+	}
+
+	public Long getReconMainTotalCount() {
+		return reconMainTotalCount;
+	}
+
+	public void setReconMainTotalCount(Long reconMainTotalCount) {
+		this.reconMainTotalCount = reconMainTotalCount;
+	}
+
+	public Long getReconHistoryMainTotalCount() {
+		return reconHistoryMainTotalCount;
+	}
+
+	public void setReconHistoryMainTotalCount(Long reconHistoryMainTotalCount) {
+		this.reconHistoryMainTotalCount = reconHistoryMainTotalCount;
 	}
 
 	public ReconAndRequestStatusDto() {

@@ -26,7 +26,7 @@ public class DMUBasketController {
 	DMUBasketService dmuBasketService;
 
 	@GetMapping("/all")
-	public List<DMUBasketDto> getConnectionDetails() {
+	public List<DMUBasketDto> getAllBasketDetails() {
 		return dmuBasketService.getAllBasketDetails();
 	}
 
