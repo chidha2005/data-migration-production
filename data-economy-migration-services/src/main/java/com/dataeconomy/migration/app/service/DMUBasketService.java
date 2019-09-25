@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -90,13 +91,14 @@ public class DMUBasketService {
 										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
 										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
 										.labelName(dmuBasketDto.getLabelName()).build());
-
-						dmuPgtyRepository.save(DMUPtgyTemp.builder()
-								.id(DMUPtgyPK.builder().userId(dmuBasketDto.getUserId())
-										.labelName(dmuBasketDto.getLabelName()).build())
-								.tknztnEnabled(dmuBasketDto.isTknztnEnabled() ? Constants.YES : Constants.NO)
-								.tknztnFilePath(dmuBasketDto.getTknztnFilePath()).build());
 					});
+			if (CollectionUtils.isNotEmpty(dmuBasketDtoList)) {
+				dmuPgtyRepository.save(DMUPtgyTemp.builder()
+						.id(DMUPtgyPK.builder().userId(dmuBasketDtoList.get(0).getUserId())
+								.labelName(dmuBasketDtoList.get(0).getLabelName()).build())
+						.tknztnEnabled(dmuBasketDtoList.get(0).isTknztnEnabled() ? Constants.YES : Constants.NO)
+						.tknztnFilePath(dmuBasketDtoList.get(0).getTknztnFilePath()).build());
+			}
 			return true;
 		} catch (Exception exception) {
 			log.info(" Exception occured at DMUBasketService :: saveBasketDetails {} ",
