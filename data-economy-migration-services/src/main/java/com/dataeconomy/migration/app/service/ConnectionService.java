@@ -92,12 +92,12 @@ public class ConnectionService {
 
 	@PostConstruct
 	public void initConnectionDetails() {
-		try {
-			getConnectionDetails();
-		} catch (DataMigrationException exception) {
-			log.info(" Exception occured at ConnectionService :: getConnectionDetails {} ",
-					ExceptionUtils.getStackTrace(exception));
-		}
+		/*
+		 * try { //getConnectionDetails(); } catch (DataMigrationException exception) {
+		 * log.
+		 * info(" Exception occured at ConnectionService :: getConnectionDetails {} ",
+		 * ExceptionUtils.getStackTrace(exception)); }
+		 */
 	}
 
 	@Transactional
@@ -170,17 +170,20 @@ public class ConnectionService {
 	private void saveTGTOtherProperties(ConnectionDto connectionDto) {
 		try {
 			if (connectionDto.getTgtOtherPropDto() != null) {
-				TGTOtherProp tgtOtherProp = TGTOtherProp.builder().srNo(connectionDto.getTgtOtherPropDto().getSrNo())
-						.parallelJobs(connectionDto.getTgtOtherPropDto().getParallelJobs())
-						.parallelUsrRqst(connectionDto.getTgtOtherPropDto().getParallelUsrRqst())
-						.tempHiveDB(connectionDto.getTgtOtherPropDto().getTempHiveDB())
-						.tempHdfsDir(connectionDto.getTgtOtherPropDto().getTempHdfsDir())
-						.tokenizationInd(connectionDto.getTgtOtherPropDto().getTokenizationInd())
-						.ptgyDirPath(connectionDto.getTgtOtherPropDto().getPtgyDirPath())
-						.hdfsEdgeNode(connectionDto.getTgtOtherPropDto().getHdfsEdgeNode())
-						.hdfsUserName(connectionDto.getTgtOtherPropDto().getHdfsUserName())
-						.hdfsPemLocation(connectionDto.getTgtOtherPropDto().getHdfsPemLocation()).build();
-				tgtOtherPropRepository.save(tgtOtherProp);
+				Optional<TGTOtherProp> tgtOtherPropOpt = tgtOtherPropRepository.findById(1L);
+				if (tgtOtherPropOpt.isPresent()) {
+					TGTOtherProp tgtOtherPropOptEntity = tgtOtherPropOpt.get();
+					tgtOtherPropOptEntity.setParallelJobs(tgtOtherPropOptEntity.getParallelJobs());
+					tgtOtherPropOptEntity.setParallelUsrRqst(connectionDto.getTgtOtherPropDto().getParallelUsrRqst());
+					tgtOtherPropOptEntity.setTempHiveDB(connectionDto.getTgtOtherPropDto().getTempHiveDB());
+					tgtOtherPropOptEntity.setTempHdfsDir(connectionDto.getTgtOtherPropDto().getTempHdfsDir());
+					tgtOtherPropOptEntity.setTokenizationInd(connectionDto.getTgtOtherPropDto().getTokenizationInd());
+					tgtOtherPropOptEntity.setPtgyDirPath(connectionDto.getTgtOtherPropDto().getPtgyDirPath());
+					tgtOtherPropOptEntity.setHdfsEdgeNode(connectionDto.getTgtOtherPropDto().getHdfsEdgeNode());
+					tgtOtherPropOptEntity.setHdfsUserName(connectionDto.getTgtOtherPropDto().getHdfsUserName());
+					tgtOtherPropOptEntity.setHdfsPemLocation(connectionDto.getTgtOtherPropDto().getHdfsPemLocation());
+					tgtOtherPropRepository.save(tgtOtherPropOptEntity);
+				}
 			}
 		} catch (Exception exception) {
 			log.info(" Exception occured at TGTOtherPropService :: getAllTGTOtherProp {} ",
@@ -356,11 +359,9 @@ public class ConnectionService {
 			if (Constants.YES.equalsIgnoreCase(dmuHdfsObj.getHiveCnctnFlag())) {
 				connectionDto.setHiveConnEnabled(true);
 			}
-
 			if (Constants.YES.equalsIgnoreCase(dmuHdfsObj.getImpalaCnctnFlag())) {
 				connectionDto.setImpalaConnEnabled(true);
 			}
-
 			if (Constants.YES.equalsIgnoreCase(dmuHdfsObj.getSparkCnctnFlag())) {
 				connectionDto.setSparkConnEnabled(true);
 			}
