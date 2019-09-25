@@ -132,8 +132,9 @@ public class DMUBasketService {
 								.tknztnFilePath(dmuBasketDto.getTknztnFilePath()).build());
 
 						reconMainRepository.save(DMUReconMain.builder().userId(dmuBasketDto.getUserId())
-								.status(Constants.NOT_STARTED).requestType(dmuBasketDto.getRequestType())
-								.requestNo(dmuBasketDto.getLabelName()).build());
+								.requestedTime(LocalDateTime.now()).status(Constants.NOT_STARTED)
+								.requestType(dmuBasketDto.getRequestType()).requestNo(dmuBasketDto.getLabelName())
+								.build());
 
 						historyDetailRepository.save(DMUHistoryDetail.builder()
 								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
