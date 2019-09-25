@@ -293,7 +293,9 @@ public class ConnectionService {
 			dmuS3Entity.setLdapUserPassw(null);
 			dmuS3Entity.setScCrdntlAccessType(null);
 
-			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
+			if (StringUtils.equalsIgnoreCase(Constants.DIRECT_HDFS, connectionDto.getConnectionType())) {
+				dmuS3Entity.setCredentialStrgType(Constants.DIRECT_HDFS);
+			} else if (StringUtils.equalsIgnoreCase(Constants.DIRECT_LC, connectionDto.getConnectionType())) {
 				dmuS3Entity.setCredentialStrgType(Constants.DIRECT_LC);
 				dmuS3Entity.setAwsAccessIdLc(connectionDto.getAwsAccessIdLc());
 				dmuS3Entity.setAwsSecretKeyLc(connectionDto.getAwsSecretKeyLc());
