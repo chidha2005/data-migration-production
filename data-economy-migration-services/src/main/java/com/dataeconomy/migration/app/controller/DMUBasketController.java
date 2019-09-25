@@ -39,7 +39,7 @@ public class DMUBasketController {
 	@PostMapping("/save/purge")
 	public boolean saveBasketDetailsAndPurge(@RequestBody List<DMUBasketDto> dmuBasketDtoList,
 			@RequestHeader("userId") String userId) throws DataMigrationException {
-		return dmuBasketService.saveBasketDetails(dmuBasketDtoList, userId);
+		return dmuBasketService.saveBasketDetailsAndPurge(dmuBasketDtoList, userId);
 	}
 
 	@GetMapping("/clear")

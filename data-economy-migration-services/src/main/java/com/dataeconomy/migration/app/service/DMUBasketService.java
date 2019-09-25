@@ -2,6 +2,7 @@ package com.dataeconomy.migration.app.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +22,12 @@ import com.dataeconomy.migration.app.connection.HDFSConnectionService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUBasketTemp;
+import com.dataeconomy.migration.app.mysql.entity.DMUHIstoryDetailPK;
+import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
 import com.dataeconomy.migration.app.mysql.entity.DMUPtgyPK;
 import com.dataeconomy.migration.app.mysql.entity.DMUPtgyTemp;
+import com.dataeconomy.migration.app.mysql.entity.DMUReconDetail;
+import com.dataeconomy.migration.app.mysql.entity.DMUReconMain;
 import com.dataeconomy.migration.app.mysql.repository.BasketTempRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUPgtyRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUPtgyTempRepository;
@@ -103,6 +108,61 @@ public class DMUBasketService {
 		} catch (Exception exception) {
 			log.info(" Exception occured at DMUBasketService :: saveBasketDetails {} ",
 					ExceptionUtils.getStackTrace(exception));
+			throw new DataMigrationException("Unable to persist basket details to database ");
+		}
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	public synchronized boolean saveBasketDetailsAndPurge(List<DMUBasketDto> dmuBasketDtoList, String userName)
+			throws DataMigrationException {
+		try {
+			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
+					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
+						basketTempRepository.save(
+								DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo()).userId(dmuBasketDto.getUserId())
+										.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+										.filterCondition(dmuBasketDto.getFilterCondition())
+										.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
+										.labelName(dmuBasketDto.getLabelName()).build());
+
+						reconMainRepository.save(DMUReconMain.builder().userId(dmuBasketDto.getUserId())
+								.status(Constants.NOT_STARTED).requestType(dmuBasketDto.getRequestType())
+								.requestNo(dmuBasketDto.getLabelName()).build());
+
+						historyDetailRepository.save(DMUHistoryDetail.builder()
+								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
+										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+								.filterCondition(dmuBasketDto.getFilterCondition())
+								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+								.incrementalClmn(dmuBasketDto.getIncrementalClmn()).status(Constants.SUBMITTED)
+								.build());
+
+						dmuReconDetailRepository.save(DMUReconDetail.builder()
+								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
+										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+								.filterCondition(dmuBasketDto.getFilterCondition())
+								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+								.incrementalColumn(dmuBasketDto.getIncrementalClmn()).status(Constants.NOT_STARTED)
+								.build());
+					});
+
+			if (CollectionUtils.isNotEmpty(dmuBasketDtoList)) {
+				dmuPgtyRepository.save(DMUPtgyTemp.builder()
+						.id(DMUPtgyPK.builder().userId(dmuBasketDtoList.get(0).getUserId())
+								.labelName(dmuBasketDtoList.get(0).getLabelName()).build())
+						.tknztnEnabled(dmuBasketDtoList.get(0).isTknztnEnabled() ? Constants.YES : Constants.NO)
+						.tknztnFilePath(dmuBasketDtoList.get(0).getTknztnFilePath()).build());
+			}
+			basketTempRepository.deleteById(userName);
+			dmuPtgyRepository.deleteByRequestedUserName(userName);
+			return true;
+		} catch (Exception e) {
 			throw new DataMigrationException("Unable to persist basket details to database ");
 		}
 
