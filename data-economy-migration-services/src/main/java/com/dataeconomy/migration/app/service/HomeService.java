@@ -1,12 +1,13 @@
 package com.dataeconomy.migration.app.service;
 
-import java.util.Map;
+import java.util.List;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dataeconomy.migration.app.model.ReconAndRequestStatusDto;
+import com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection;
 import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DMUReconMainRepository;
 
@@ -24,20 +25,32 @@ public class HomeService {
 
 	public ReconAndRequestStatusDto getRequestAndReconStatus() {
 		log.info(" HomeService :: getRequestAndReconStatus ");
+		ReconAndRequestStatusDto reconAndRequestStatusDto = new ReconAndRequestStatusDto();
 		try {
-			Map<String, Long> reconMainCount = dmuReconMainRepository.findReconMainStatusCount();
-			Map<String, Long> reconHistoryMainCount = dmuHistoryMainRepository.findReconHistoryStatusCount();
-			ReconAndRequestStatusDto reconAndRequestStatusDto = ReconAndRequestStatusDto.builder()
-					.reconMainCount(reconMainCount).reconHistoryMainCount(reconHistoryMainCount).build();
-			log.info(" HomeService ::   getRequestAndReconStatus  :: reconMainCount :: {} ", reconMainCount);
-			log.info(" HomeService ::   getRequestAndReconStatus  :: reconHistoryMainCount :: {} ",
-					reconHistoryMainCount);
+
+			List<ReconAndRequestCountProjection> reconMainCountList = dmuReconMainRepository.findReconMainStatusCount();
+			List<ReconAndRequestCountProjection> reconHistoryMainCountList = dmuHistoryMainRepository
+					.findReconHistoryStatusCount();
+
+			if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(reconMainCountList)) {
+				reconMainCountList.stream().forEach(reconMainObj -> {
+					reconAndRequestStatusDto.getReconMainCount().put(reconMainObj.getStatus(), reconMainObj.getCount());
+				});
+			}
+
+			if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(reconHistoryMainCountList)) {
+				reconHistoryMainCountList.stream().forEach(reconMainObj -> {
+					reconAndRequestStatusDto.getReconHistoryMainCount().put(reconMainObj.getStatus(),
+							reconMainObj.getCount());
+				});
+			}
+
 			log.info(" HomeService ::   getRequestAndReconStatus  :: all count :: {} ", reconAndRequestStatusDto);
 			return reconAndRequestStatusDto;
 		} catch (Exception exception) {
 			log.info(" Exception occured at HomeService :: getRequestAndReconStatus {} ",
 					ExceptionUtils.getStackTrace(exception));
-			return ReconAndRequestStatusDto.builder().build();
+			return reconAndRequestStatusDto;
 		}
 
 	}

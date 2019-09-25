@@ -2,18 +2,37 @@ package com.dataeconomy.migration.app.model;
 
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.google.common.collect.Maps;
 
-@Builder
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ReconAndRequestStatusDto {
 
-	Map<String, Long> reconMainCount;
-	Map<String, Long> reconHistoryMainCount;
+	Map<String, Long> reconMainCount = Maps.newLinkedHashMap();
+	Map<String, Long> reconHistoryMainCount = Maps.newLinkedHashMap();
+
+	public Map<String, Long> getReconMainCount() {
+		return reconMainCount;
+	}
+
+	public void setReconMainCount(Map<String, Long> reconMainCount) {
+		this.reconMainCount = reconMainCount;
+	}
+
+	public Map<String, Long> getReconHistoryMainCount() {
+		return reconHistoryMainCount;
+	}
+
+	public void setReconHistoryMainCount(Map<String, Long> reconHistoryMainCount) {
+		this.reconHistoryMainCount = reconHistoryMainCount;
+	}
+
+	@Override
+	public String toString() {
+		return "ReconAndRequestStatusDto [reconMainCount=" + reconMainCount + ", reconHistoryMainCount="
+				+ reconHistoryMainCount + "]";
+	}
+
+	public ReconAndRequestStatusDto() {
+		super();
+	}
 
 }
