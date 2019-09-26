@@ -82,7 +82,7 @@ public class DMUHelperService {
 			if (tgtFormatPropEntity != null) {
 
 				tgtFormatPropEntity.setTextFormatFlag(Constants.NO);
-				tgtFormatPropEntity.setFieldDelimiter(Constants.NO);
+				tgtFormatPropEntity.setFieldDelimiter(null);
 				tgtFormatPropEntity.setSrcFormatFlag(Constants.NO);
 				tgtFormatPropEntity.setSqncFormatFlag(Constants.NO);
 				tgtFormatPropEntity.setRcFormatFlag(Constants.NO);
@@ -94,7 +94,7 @@ public class DMUHelperService {
 				tgtFormatPropEntity.setGzipCmprsnFlag(Constants.NO);
 
 				if (StringUtils.isNotBlank(tgtFormatPropObj.getFieldDelimiter())) {
-					tgtFormatPropEntity.setFieldDelimiter(Constants.YES);
+					tgtFormatPropEntity.setFieldDelimiter(tgtFormatPropObj.getFieldDelimiter());
 				}
 
 				if (StringUtils.equalsIgnoreCase(Constants.SOURCE, tgtFormatPropObj.getFormatType())) {
@@ -205,7 +205,7 @@ public class DMUHelperService {
 
 	public void populateDMUAuthenticationProperties(ConnectionDto connectionDto) {
 		Optional<DMUAuthentication> dmuAuthentication = authenticationRepository.findById(1L);
-	log.info(" => dmuAuthentication " + dmuAuthentication);
+		log.info(" => dmuAuthentication " + dmuAuthentication);
 		if (dmuAuthentication.isPresent()) {
 			DMUAuthentication dmuAuthenticationObj = dmuAuthentication.get();
 			connectionDto.setAuthenticationType(dmuAuthenticationObj.getAuthenticationType());
