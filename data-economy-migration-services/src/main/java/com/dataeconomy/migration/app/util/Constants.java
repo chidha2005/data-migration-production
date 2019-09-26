@@ -65,5 +65,6 @@ public final class Constants {
 	public static final String SRC_COMPRESSION = "SRC_COMPRESSION";
 	public static final String STORED_AS = "STORED_AS";
 	public static final String DIRECT_HDFS = "DIRHDFS";
+	public static final String SUCCESS = "Successful";
 
 }

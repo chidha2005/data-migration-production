@@ -25,6 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DMUConnectionValidationService {
 
+	@Autowired
+	private HiveConnectionService hiveConnectionService;
+
+	@Autowired
+	private ImaplaConnectionService imaplaConnectionService;
+
+	@Autowired
+	private SparkConnectionService sparkConnectionService;
+
 	@PostConstruct
 	public void loadDriverClass() {
 		log.info(" DMUConnectionValidationService :: loadDriverClass :: initializing driver classes ");
@@ -37,15 +46,6 @@ public class DMUConnectionValidationService {
 					ExceptionUtils.getStackTrace(e));
 		}
 	}
-
-	@Autowired
-	private HiveConnectionService hiveConnectionService;
-
-	@Autowired
-	private ImaplaConnectionService imaplaConnectionService;
-
-	@Autowired
-	private SparkConnectionService sparkConnectionService;
 
 	public boolean validateConnectionDetails(ConnectionDto connectionDto) throws Exception {
 		if (StringUtils.equalsIgnoreCase(Constants.HIVE, connectionDto.getConnectionType())) {

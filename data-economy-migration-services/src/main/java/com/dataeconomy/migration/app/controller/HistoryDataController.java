@@ -24,8 +24,9 @@ public class HistoryDataController {
 	}
 
 	@GetMapping("/all/{requestNumber}")
-	public HistoryDetailDto getAllHistoryDetails(@PathVariable("requestNumber") String requestNumber) {
+	public List<HistoryDetailDto> getAllHistoryDetails(@PathVariable("requestNumber") String requestNumber) {
 		return historyDetailService.getAllHistoryDetailsByReq(requestNumber);
 	}
 
 }
+  

@@ -75,7 +75,7 @@ public class TGTOtherPropService {
 					.parallelUsrRqst(tgtOtherPropDto.getParallelUsrRqst()).tempHiveDB(tgtOtherPropDto.getTempHiveDB())
 					.tempHdfsDir(tgtOtherPropDto.getTempHdfsDir()).tokenizationInd(tgtOtherPropDto.getTokenizationInd())
 					.ptgyDirPath(tgtOtherPropDto.getPtgyDirPath()).hdfsEdgeNode(tgtOtherPropDto.getHdfsEdgeNode())
-					.hdfsUserName(tgtOtherPropDto.getHdfsUserName())
+					.hdfsUserName(tgtOtherPropDto.getHdfsUserName()).tempHdfsDir(tgtOtherPropDto.getHadoopInstallDir())
 					.hdfsPemLocation(tgtOtherPropDto.getHdfsPemLocation()).build();
 			tgtOtherPropRepository.save(tgtOtherProp);
 			return tgtOtherPropDto;

@@ -2,7 +2,6 @@ package com.dataeconomy.migration.app.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,14 +93,14 @@ public class DMUBasketService {
 		try {
 			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
 					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
-						basketTempRepository.save(
-								DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo()).userId(dmuBasketDto.getUserId())
-										.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
-										.filterCondition(dmuBasketDto.getFilterCondition())
-										.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
-										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
-										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
-										.labelName(dmuBasketDto.getLabelName()).build());
+						basketTempRepository.save(DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo())
+								.userId(dmuBasketDto.getUserId()).schemaName(dmuBasketDto.getSchemaName())
+								.tableName(dmuBasketDto.getTableName())
+								.filterCondition(dmuBasketDto.getFilterCondition())
+								.targetS3Bucket(dmuBasketDto.getSchemaName() + "/" + dmuBasketDto.getTargetS3Bucket())
+								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+								.incrementalClmn(dmuBasketDto.getIncrementalClmn())
+								.labelName(dmuBasketDto.getLabelName()).build());
 					});
 			if (CollectionUtils.isNotEmpty(dmuBasketDtoList)) {
 				dmuPgtyRepository.save(DMUPtgyTemp.builder()
@@ -121,10 +120,10 @@ public class DMUBasketService {
 	@Transactional(rollbackFor = Exception.class)
 	public synchronized boolean saveBasketDetailsAndPurge(List<DMUBasketDto> dmuBasketDtoList, String userName)
 			throws DataMigrationException {
+		log.info(" called => DMUBasketService :: saveBasketDetailsAndPurge " + dmuBasketDtoList.toString());
 		try {
 			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
 					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
-
 						dmuHistoryMainRepository.save(DMUHistoryMain.builder().userId(dmuBasketDto.getUserId())
 								.requestedTime(LocalDateTime.now()).status(Constants.SUBMITTED)
 								.requestType(dmuBasketDto.getRequestType()).requestNo(dmuBasketDto.getLabelName())
@@ -138,7 +137,7 @@ public class DMUBasketService {
 
 						historyDetailRepository.save(DMUHistoryDetail.builder()
 								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
-										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+										.requestNo(dmuBasketDto.getLabelName()).build())
 								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
 								.filterCondition(dmuBasketDto.getFilterCondition())
 								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
@@ -148,7 +147,7 @@ public class DMUBasketService {
 
 						dmuReconDetailRepository.save(DMUReconDetail.builder()
 								.dmuHIstoryDetailPK(DMUHIstoryDetailPK.builder().srNo(dmuBasketDto.getSrNo())
-										.requestNo(dmuBasketDto.getLabelName() + LocalDate.now()).build())
+										.requestNo(dmuBasketDto.getLabelName()).build())
 								.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
 								.filterCondition(dmuBasketDto.getFilterCondition())
 								.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
@@ -224,6 +223,7 @@ public class DMUBasketService {
 		}
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	public boolean purgeBasketDetailsBySrNo(Long srNo) throws DataMigrationException {
 		try {
 			basketTempRepository.deleteBySrNo(srNo);
@@ -231,17 +231,16 @@ public class DMUBasketService {
 		} catch (Exception exception) {
 			throw new DataMigrationException("Unable to delete basket details ");
 		}
-
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	public boolean clearBasketDetails(String userName) throws DataMigrationException {
 		try {
 			basketTempRepository.deleteById(userName);
 			dmuPtgyRepository.deleteByRequestedUserName(userName);
 			return true;
 		} catch (Exception exception) {
-			throw new DataMigrationException("Unable to clear basket details ");
+			throw new DataMigrationException("Unable to clear basket details " + exception);
 		}
 	}
-
 }

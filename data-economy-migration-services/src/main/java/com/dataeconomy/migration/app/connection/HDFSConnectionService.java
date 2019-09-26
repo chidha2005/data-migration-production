@@ -1,5 +1,7 @@
 package com.dataeconomy.migration.app.connection;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -16,11 +18,9 @@ import com.dataeconomy.migration.app.conn.service.ImaplaConnectionService;
 import com.dataeconomy.migration.app.conn.service.SparkConnectionService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.ConnectionDto;
-import com.dataeconomy.migration.app.mysql.entity.DMUAuthentication;
-import com.dataeconomy.migration.app.mysql.entity.DMUHdfs;
-import com.dataeconomy.migration.app.mysql.repository.AuthenticationRepository;
-import com.dataeconomy.migration.app.mysql.repository.HDFSRepository;
 import com.dataeconomy.migration.app.util.Constants;
+import com.dataeconomy.migration.app.util.DMUHelperService;
+import com.google.common.collect.Maps;
 import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +36,6 @@ public class HDFSConnectionService {
 	private HiveConnectionService hiveConnectionService;
 
 	@Autowired
-	private HDFSRepository hdfsRepository;
-
-	@Autowired
 	private ImaplaConnectionService imaplaConnectionService;
 
 	@Autowired
@@ -48,30 +45,21 @@ public class HDFSConnectionService {
 	private DMUConnectionPool dmuConnectionPool;
 
 	@Autowired
-	private AuthenticationRepository authenticationRepository;
+	private DMUHelperService dmuHelperService;
 
-	private DataSource hiveDataSource;
-
-	private DataSource impalaDataSource;
-
-	private DataSource sparkDataSource;
+	private Map<String, DataSource> dataSourceMap = Collections.synchronizedMap(Maps.newHashMap());
 
 	@PostConstruct
 	public void initDataSourceConfig() {
 		try {
-			log.info(" initializing datasource connections while server startt up ");
-			Optional<DMUHdfs> dmuHdfs = hdfsRepository.findById(1L);
-			Optional<DMUAuthentication> dmuAuthentication = authenticationRepository.findById(1L);
+			log.info(" initializing datasource connections while server start up ");
 			ConnectionDto connectionDto = ConnectionDto.builder().build();
-			if (dmuAuthentication.isPresent()) {
-				populateDMUAuthenticationProperties(connectionDto, dmuAuthentication);
-			}
-			if (dmuHdfs.isPresent()) {
-				populateDMUHdfsProperties(connectionDto, dmuHdfs);
-			}
+			dmuHelperService.populateDMUAuthenticationProperties(connectionDto);
+			dmuHelperService.populateDMUHdfsProperties(connectionDto);
 			populateDataSourceConfig(connectionDto);
 		} catch (Exception exception) {
-			log.error("Exception while creating datasources while server up");
+			log.error("Exception while creating datasources while server up {} ",
+					ExceptionUtils.getStackTrace(exception));
 		}
 	}
 
@@ -80,8 +68,9 @@ public class HDFSConnectionService {
 			Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
 			if (hiveConnStringOpt.isPresent()) {
 				String hiveConnString = hiveConnStringOpt.get();
-				hiveDataSource = retrieveDataSource(Constants.HIVE_CONN_POOL, Constants.HIVE_DRIVER_CLASS_NAME,
-						hiveConnString);
+				DataSource hiveDataSource = retrieveDataSource(Constants.HIVE_CONN_POOL,
+						Constants.HIVE_DRIVER_CLASS_NAME, hiveConnString);
+				dataSourceMap.put(Constants.REGULAR, hiveDataSource);
 				log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for HIVE connection Validation ");
@@ -91,8 +80,9 @@ public class HDFSConnectionService {
 			Optional<String> impalaConnStringOpt = imaplaConnectionService.getImpalaConnectionDetails(connectionDto);
 			if (impalaConnStringOpt.isPresent()) {
 				String impalaConnString = impalaConnStringOpt.get();
-				impalaDataSource = retrieveDataSource(Constants.IMPALA, Constants.IMPALA_DRIVER_CLASS_NAME,
+				DataSource impalaDataSource = retrieveDataSource(Constants.IMPALA, Constants.IMPALA_DRIVER_CLASS_NAME,
 						impalaConnString);
+				dataSourceMap.put(Constants.LARGEQUERY, impalaDataSource);
 				log.info(" ConnectionService :: validateConnection :: impalaConnString {}", impalaConnString);
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for IMPALA connection Validation ");
@@ -124,65 +114,21 @@ public class HDFSConnectionService {
 		}
 	}
 
-	public DataSource getValidDataSource(String dataSourceType) {
+	public synchronized DataSource getValidDataSource(String dataSourceType) throws DataMigrationException {
 		log.error("called => HDFSConnectionService  :: getValidDataSource :: dataSourceType  {} ", dataSourceType);
-		DataSource dataSource = null;
 		try {
-			switch (dataSourceType) {
-			case Constants.REGULAR:
-				dataSource = hiveDataSource;
-				break;
-			case Constants.LARGEQUERY:
-				dataSource = impalaDataSource;
-				break;
-			case Constants.MEDIUMQUERY:
-				dataSource = sparkDataSource;
-				break;
-			case Constants.SMALLQUERY:
-				dataSource = sparkDataSource;
-				break;
-			default:
-				dataSource = hiveDataSource;
+			if (dataSourceMap.get(dataSourceType) != null) {
+				return dataSourceMap.get(dataSourceType);
+			} else {
+				DataSource dataSource = dmuConnectionPool.getDataSourceFromConfig(Constants.DEFAULT_HIVE_POOL,
+						Constants.HIVE_DRIVER_CLASS_NAME, hiveConnUrl);
+				dataSourceMap.put(Constants.REGULAR, dataSource);
+				return dataSource;
 			}
 		} catch (Exception exception) {
 			log.error("Exception while retrieving datasource for given type {} , {} ", dataSourceType,
 					ExceptionUtils.getStackTrace(exception));
-		}
-		if (dataSource == null) {
-			log.info("Datasource is not configured retrieving the default data source (hive) ");
-			dataSource = dmuConnectionPool.getDataSourceFromConfig(Constants.DEFAULT_HIVE_POOL,
-					Constants.HIVE_DRIVER_CLASS_NAME, hiveConnUrl);
-			hiveDataSource = dataSource;
-		}
-		return dataSource;
-	}
-
-	private void populateDMUAuthenticationProperties(ConnectionDto connectionDto,
-			Optional<DMUAuthentication> dmuAuthentication) {
-		if (dmuAuthentication.isPresent()) {
-			DMUAuthentication dmuAuthenticationObj = dmuAuthentication.get();
-			connectionDto.setAuthenticationType(dmuAuthenticationObj.getAuthenticationType());
-			connectionDto.setLdapCnctnFlag(dmuAuthenticationObj.getLdapCnctnFlag());
-			connectionDto.setKerberosCnctnFlag(dmuAuthenticationObj.getKerberosCnctnFlag());
-		}
-	}
-
-	private void populateDMUHdfsProperties(ConnectionDto connectionDto, Optional<DMUHdfs> dmuHdfs) {
-		if (dmuHdfs.isPresent()) {
-			DMUHdfs dmuHdfsObj = dmuHdfs.get();
-			connectionDto.setHiveCnctnFlag(dmuHdfsObj.getHiveCnctnFlag());
-			connectionDto.setHiveHostName(dmuHdfsObj.getHiveHostName());
-			connectionDto.setHivePortNmbr(
-					dmuHdfsObj.getHivePortNmbr() != null ? String.valueOf(dmuHdfsObj.getHivePortNmbr()) : "");
-
-			connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
-			connectionDto.setImpalaPortNmbr(
-					dmuHdfsObj.getImpalaPortNmbr() != null ? String.valueOf(dmuHdfsObj.getImpalaPortNmbr()) : "");
-			connectionDto.setImpalaHostName(dmuHdfsObj.getImpalaHostName());
-
-			connectionDto.setSqlWhDir(dmuHdfsObj.getSqlWhDir());
-			connectionDto.setImpalaCnctnFlag(dmuHdfsObj.getImpalaCnctnFlag());
-			connectionDto.setSparkCnctnFlag(dmuHdfsObj.getSparkCnctnFlag());
+			throw new DataMigrationException(" DataSource config not found");
 		}
 	}
 

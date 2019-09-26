@@ -25,7 +25,7 @@ public class HistoryDetailService {
 	@Autowired
 	private HistoryDetailRepository historyDetailRepository;
 
-	public HistoryDetailDto getAllHistoryDetailsByReq(String requestNumber) {
+	public List<HistoryDetailDto> getAllHistoryDetailsByReq(String requestNumber) {
 		log.info(" HistoryDetailService :: getAllHistoryDetailsByReq {} ",
 				Objects.toString(requestNumber, "Invalid requestNumber"));
 		try {
@@ -33,26 +33,21 @@ public class HistoryDetailService {
 					.findHistoryDetailsByRequestNumber(requestNumber);
 			log.info(" HistoryDetailService :: getAllHistoryDetailsByReq dmuHistoryDetailListOpt :: {} ",
 					Objects.toString(dmuHistoryDetailListOpt, "Empty resultset"));
-			if (CollectionUtils.isNotEmpty(dmuHistoryDetailListOpt)) {
-				List<HistoryDetailDto> historyDetailDtoList = dmuHistoryDetailListOpt.stream()
-						.map(dmuHistoryDetailObj -> {
-							return HistoryDetailDto.builder().schemaName(dmuHistoryDetailObj.getSchemaName())
-									.tableName(dmuHistoryDetailObj.getTableName())
-									.filterCondition(dmuHistoryDetailObj.getFilterCondition())
-									.targetS3Bucket(dmuHistoryDetailObj.getTargetS3Bucket())
-									.incrementalClmn(dmuHistoryDetailObj.getIncrementalFlag())
-									.incrementalClmn(dmuHistoryDetailObj.getIncrementalClmn())
-									.status(dmuHistoryDetailObj.getStatus()).build();
-						}).collect(Collectors.toList());
-				if (CollectionUtils.isNotEmpty(historyDetailDtoList)) {
-					return historyDetailDtoList.get(0);
-				}
-			}
-			return HistoryDetailDto.builder().build();
+
+			return dmuHistoryDetailListOpt.stream().map(dmuHistoryDetailObj -> {
+				return HistoryDetailDto.builder().schemaName(dmuHistoryDetailObj.getSchemaName())
+						.tableName(dmuHistoryDetailObj.getTableName())
+						.filterCondition(dmuHistoryDetailObj.getFilterCondition())
+						.targetS3Bucket(dmuHistoryDetailObj.getTargetS3Bucket()) 
+						.incrementalClmn(dmuHistoryDetailObj.getIncrementalFlag())
+						.incrementalClmn(dmuHistoryDetailObj.getIncrementalClmn())
+						.status(dmuHistoryDetailObj.getStatus()).build();
+			}).collect(Collectors.toList());
+
 		} catch (Exception exception) {
 			log.info(" Exception occured at HistoryDetailService :: getAllHistoryDetailsByReq {} ",
 					ExceptionUtils.getStackTrace(exception));
-			return HistoryDetailDto.builder().build();
+			return Collections.emptyList();
 		}
 	}
 

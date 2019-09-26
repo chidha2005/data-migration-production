@@ -9,18 +9,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DMUExecutorServiceConfig {
 
-	@Bean("fixedThreadPool")
-	public ExecutorService fixedThreadPool() {
-		return Executors.newFixedThreadPool(5);
-	}
-
-	@Bean("singleThreaded")
-	public ExecutorService singleThreadedExecutor() {
-		return Executors.newSingleThreadExecutor();
-	}
-
 	@Bean("cachedThreadPool")
 	public ExecutorService cachedThreadPool() {
+		return Executors.newCachedThreadPool();
+	}
+
+	@Bean("requestProcessorThread")
+	public ExecutorService requestProcessorThread() {
 		return Executors.newCachedThreadPool();
 	}
 

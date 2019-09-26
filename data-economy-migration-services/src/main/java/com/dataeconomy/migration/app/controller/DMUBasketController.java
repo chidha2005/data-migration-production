@@ -43,7 +43,7 @@ public class DMUBasketController {
 	}
 
 	@GetMapping("/clear")
-	public boolean clearBasketDetails(@RequestHeader("userId") String userId) throws DataMigrationException {
+	public boolean clearBasketDetails(@RequestParam("userId") String userId) throws DataMigrationException {
 		return dmuBasketService.clearBasketDetails(userId);
 	}
 

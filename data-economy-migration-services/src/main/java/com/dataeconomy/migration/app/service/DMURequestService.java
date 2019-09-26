@@ -91,10 +91,10 @@ public class DMURequestService {
 					List<DMUBasketDto> dmuBasketDtoList = Lists.newArrayList();
 					Long i = 0L;
 					while (rs.next()) {
-						dmuBasketDtoList.add(DMUBasketDto.builder().srNo(++i).schemaName(rs.getString(1))
-								.tableName(rs.getString(1)).filterCondition(null)
-								.targetS3Bucket(databaseName + "/" + rs.getString(1)).incrementalFlag(Constants.NO)
-								.incrementalClmn(null).build());
+						dmuBasketDtoList.add(
+								DMUBasketDto.builder().srNo(++i).schemaName(databaseName).tableName(rs.getString(1))
+										.filterCondition(null).targetS3Bucket(databaseName + "/" + rs.getString(1))
+										.incrementalFlag(Constants.NO).incrementalClmn(null).build());
 					}
 					return dmuBasketDtoList;
 				}
