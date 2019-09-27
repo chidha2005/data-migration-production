@@ -23,8 +23,10 @@ import com.dataeconomy.migration.app.model.ConnectionDto;
 import com.dataeconomy.migration.app.model.TGTFormatPropDto;
 import com.dataeconomy.migration.app.model.TGTOtherPropDto;
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
+import com.dataeconomy.migration.app.mysql.entity.DMUS3;
 import com.dataeconomy.migration.app.mysql.entity.TGTFormatProp;
 import com.dataeconomy.migration.app.mysql.entity.TGTOtherProp;
+import com.dataeconomy.migration.app.mysql.repository.DMUS3Repository;
 import com.dataeconomy.migration.app.mysql.repository.HistoryDetailRepository;
 import com.dataeconomy.migration.app.mysql.repository.TGTFormatPropRepository;
 import com.dataeconomy.migration.app.mysql.repository.TGTOtherPropRepository;
@@ -52,6 +54,9 @@ public class DemoTableCopyProcessor {
 
 	@Autowired
 	private TGTOtherPropRepository tgtOtherPropRepository;
+	
+	@Autowired
+	private DMUS3Repository dmuS3Repository;
 
 	public void processTableCopy(String requestNo, Long srNo) {
 		log.info(" executed => TableCopySchedulerClass :: requestNp {}, srNo {}", requestNo, srNo);
@@ -64,6 +69,7 @@ public class DemoTableCopyProcessor {
 			ConnectionDto connectionDto = ConnectionDto.builder().build();
 			populateTGTOtherProperties(connectionDto);
 			populateTGTFormatProperties(connectionDto);
+			populateDMUS3Properties(connectionDto);
 
 			if (dmuHistoryDetailList != null && !dmuHistoryDetailList.isEmpty()) {
 				dmuHistoryDetailList.parallelStream().forEach(historyDetailEntity -> {
@@ -92,6 +98,7 @@ public class DemoTableCopyProcessor {
 	private String getLocationForTableAndSchema(DMUHistoryDetail dmuHistoryDetail) {
 		log.info(" called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService ");
 		try {
+			StringBuilder locationHDFS = new StringBuilder();
 			return new JdbcTemplate(hdfsConnectionService.getValidDataSource(Constants.REGULAR)).query(
 					"SHOW CREATE TABLE " + dmuHistoryDetail.getSchemaName() + "." + dmuHistoryDetail.getTableName(),
 					new ResultSetExtractor<String>() {
@@ -99,13 +106,12 @@ public class DemoTableCopyProcessor {
 						@Override
 						public String extractData(ResultSet rs) throws SQLException, DataAccessException {
 							while (rs.next()) {
-								String showTable = rs.getString(1);
-								log.info(" getLocationForTableAndSchema >>>>>>>>>>>>>>>>>>>> location {} ", showTable);
-								if (StringUtils.equalsIgnoreCase(showTable, Constants.HDFS_LOCATION)) {
-									return (showTable.substring(3, showTable.length() - 1).trim());
-								}
+								locationHDFS.append(rs.getString(1));
 							}
-							return null;
+							return StringUtils
+									.substring(locationHDFS.toString(), locationHDFS.toString().indexOf("LOCATION") + 8,
+											locationHDFS.toString().indexOf("TBLPROPERTIES") - 1)
+									.replaceAll("'", "");
 						}
 					});
 		} catch (Exception exception) {
@@ -162,17 +168,30 @@ public class DemoTableCopyProcessor {
 		if (Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcCmprsnFlag())
 				|| Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getUncmprsnFlag())) {
 			sb.append(connectionDto.getTgtOtherPropDto().getHadoopInstallDir());
-			sb.append(
-					"/hadoop distcp -Dfs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider -Dfs.s3a.access.key=");
-			sb.append(awsCredentials.getAWSAccessKeyId());
+			sb.append("/hadoop distcp ");
+			//sb.append(
+					//"/hadoop distcp -Dfs.s3a.aws.credentials.provider=");
+			//sb.append("\"");
+			//sb.append("org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider");
+			//sb.append("\"");
+			sb.append(" -Dfs.s3a.access.key=");
+			sb.append("\"");
+			sb.append(connectionDto.getAwsAccessIdLc());
+			sb.append("\"");
 			sb.append(" -Dfs.s3a.secret.key=");
-			sb.append(awsCredentials.getAWSSecretKey());
-			sb.append(" -Dfs.s3a.session.token=");
-			sb.append(awsCredentials.getSessionToken());
+			sb.append("\"");
+			sb.append(connectionDto.getAwsSecretKeyLc());
+			//sb.append(awsCredentials.getAWSSecretKey());
+			sb.append("\"");
+			//sb.append(" -Dfs.s3a.session.token=");
+			//sb.append("\"");
+			//sb.append(awsCredentials.getSessionToken());
+			//sb.append("\"");
 			sb.append(" ");
 			sb.append(hdfsPath);
 			sb.append("/* s3a://");
 			sb.append(dmuHistoryDetail.getTargetS3Bucket());
+			sb.append(" ");
 		} else if (Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getGzipCmprsnFlag())) {
 			sb.append(" mkdir ");
 			sb.append(connectionDto.getTgtOtherPropDto().getTempHdfsDir());
@@ -192,17 +211,27 @@ public class DemoTableCopyProcessor {
 			sb.append(" ");
 			sb.append(connectionDto.getTgtOtherPropDto().getHadoopInstallDir());
 			sb.append(
-					"/hadoop distcp -Dfs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider -Dfs.s3a.access.key=");
+					"/hadoop distcp -Dfs.s3a.aws.credentials.provider=");
+			sb.append("\"");
+			sb.append("org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider");
+			sb.append("\"");
+			sb.append(" -Dfs.s3a.access.key=");
+			sb.append("\"");
 			sb.append(awsCredentials.getAWSAccessKeyId());
+			sb.append("\"");
 			sb.append(" -Dfs.s3a.secret.key=");
+			sb.append("\"");
 			sb.append(awsCredentials.getAWSSecretKey());
+			sb.append("\"");
 			sb.append(" -Dfs.s3a.session.token=");
+			sb.append("\"");
 			sb.append(awsCredentials.getSessionToken());
+			sb.append("\"");
 			sb.append(" ");
-			sb.append(hdfsPath);
 			sb.append("/* s3a://");
 			sb.append(dmuHistoryDetail.getTargetS3Bucket());
 			sb.append(" ");
+			sb.append(hdfsPath);
 			sb.append(" rm –r ");
 			sb.append(connectionDto.getTgtOtherPropDto().getTempHdfsDir());
 			sb.append(requestNo);
@@ -310,5 +339,31 @@ public class DemoTableCopyProcessor {
 					ExceptionUtils.getStackTrace(exception));
 		}
 
+	}
+	
+	public void populateDMUS3Properties(ConnectionDto connectionDto) {
+		Optional<DMUS3> dmuS3 = dmuS3Repository.findById(1L);
+		if (dmuS3.isPresent()) {
+			DMUS3 dmuS3Obj = dmuS3.get();
+			connectionDto.setCredentialStrgType(dmuS3Obj.getCredentialStrgType());
+			connectionDto.setConnectionType(dmuS3Obj.getCredentialStrgType());
+
+			connectionDto.setAwsAccessIdLc(dmuS3Obj.getAwsAccessIdLc());
+			connectionDto.setAwsSecretKeyLc(dmuS3Obj.getAwsSecretKeyLc());
+			connectionDto.setAwsAccessIdSc(dmuS3Obj.getAwsAccessIdSc());
+			connectionDto.setScCrdntlAccessType(dmuS3Obj.getScCrdntlAccessType());
+			connectionDto.setAwsSecretKeySc(dmuS3Obj.getAwsSecretKeySc());
+			connectionDto.setAwsAccessIdSc(dmuS3Obj.getAwsAccessIdLc());
+			connectionDto.setRoleArn(dmuS3Obj.getRoleArn());
+			connectionDto.setPrincipalArn(dmuS3Obj.getPrincipalArn());
+			connectionDto.setSamlProviderArn(dmuS3Obj.getSamlProviderArn());
+			connectionDto.setRoleSesnName(dmuS3Obj.getRoleSesnName());
+			connectionDto.setPolicyArnMembers(dmuS3Obj.getPolicyArnMembers());
+			connectionDto.setExternalId(dmuS3Obj.getExternalId());
+			connectionDto.setDuration(dmuS3Obj.getDuration() != null ? Math.toIntExact(dmuS3Obj.getDuration()) : 0);
+			connectionDto.setLdapUserName(dmuS3Obj.getLdapUserName());
+			connectionDto.setLdapUserPassw(dmuS3Obj.getLdapUserPassw());
+			connectionDto.setScCrdntlAccessType(dmuS3Obj.getScCrdntlAccessType());
+		}
 	}
 }

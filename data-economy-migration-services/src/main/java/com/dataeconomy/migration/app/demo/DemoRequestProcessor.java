@@ -1,6 +1,7 @@
 package com.dataeconomy.migration.app.demo;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -8,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
 import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
@@ -34,11 +34,19 @@ public class DemoRequestProcessor {
 
 	ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
-	@Transactional
+//	@Transactional
 	public void processRequest(String requestNo, TGTOtherProp tgtOtherPropOpt) {
 		try {
 			log.info(" updates history main table with staus => 'In Progress' for requestNo {} ", requestNo);
-			historyMainRepository.updateForRequestNo(requestNo, Constants.IN_PROGRESS);
+//			historyMainRepository.updateForRequestNo(requestNo, Constants.IN_PROGRESS);
+
+			Optional<DMUHistoryMain> dmuHistoryOpt = historyMainRepository.findById(requestNo);
+
+			if (dmuHistoryOpt.isPresent()) {
+				DMUHistoryMain updated = dmuHistoryOpt.get();
+				updated.setStatus(Constants.IN_PROGRESS);
+				historyMainRepository.save(updated);
+			}
 
 			Long numberOfJobs = historyDetailRepository.findHistoryDetailsByRequestNoAndStatusAscOrder(requestNo,
 					Constants.SUBMITTED);
@@ -56,7 +64,8 @@ public class DemoRequestProcessor {
 				if (CollectionUtils.isNotEmpty(dmuHistoryDetailList)) {
 					log.info(" retrieved the records for requestNo {} from DMU_HISTORY_DTL {} with count {} ",
 							dmuHistoryDetailList.size());
-					dmuHistoryDetailList.parallelStream().limit(tgtOtherPropOpt.getParallelJobs())
+//					dmuHistoryDetailList.parallelStream().limit(tgtOtherPropOpt.getParallelJobs())
+					dmuHistoryDetailList.stream().limit(tgtOtherPropOpt.getParallelJobs())
 							.forEach(historyDetailEntity -> {
 								log.info("Thread : " + Thread.currentThread().getName() + ", value: " + requestNo
 										+ " - " + historyDetailEntity.getDmuHIstoryDetailPK().getSrNo());

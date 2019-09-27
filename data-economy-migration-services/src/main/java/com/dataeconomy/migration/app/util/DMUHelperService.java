@@ -198,6 +198,15 @@ public class DMUHelperService {
 				dmuS3Entity.setCredentialStrgType(Constants.DIRECT_SC);
 				dmuS3Entity.setAwsAccessIdSc(connectionDto.getAwsAccessIdSc());
 				dmuS3Entity.setAwsSecretKeySc(connectionDto.getAwsSecretKeySc());
+				dmuS3Entity.setRoleArn(connectionDto.getRoleArn());
+				dmuS3Entity.setPrincipalArn(connectionDto.getPrincipalArn());
+				dmuS3Entity.setSamlProviderArn(connectionDto.getSamlProviderArn());
+				dmuS3Entity.setRoleSesnName(connectionDto.getRoleSesnName());
+				//dmuS3Entity.setPolicyArnMembers((connectionDto.getRoleArn());
+				//dmuS3Entity.setRoleArn(connectionDto.getRoleArn());
+
+				 
+
 				if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME)) {
 					dmuS3Entity.setScCrdntlAccessType(Constants.ASSUME);
 				} else if (StringUtils.equalsIgnoreCase(connectionDto.getScCrdntlAccessType(), Constants.ASSUME_SAML)) {

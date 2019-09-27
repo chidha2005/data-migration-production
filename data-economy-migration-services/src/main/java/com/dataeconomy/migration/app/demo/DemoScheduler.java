@@ -51,7 +51,8 @@ public class DemoScheduler {
 					Optional.ofNullable(
 							historyMainRepository.findHistoryMainDetailsByStatusScheduler(Constants.SUBMITTED))
 							.ifPresent(historyList -> {
-								historyList.parallelStream().forEach(historyEntity -> {
+//								historyList.parallelStream().forEach(historyEntity -> {
+								historyList.stream().forEach(historyEntity -> {
 									log.info(
 											" dmuTaskScheduler => created new thead with name  :: {} :: {} to process request No :: {} at time => ",
 											Thread.currentThread().getName(),
