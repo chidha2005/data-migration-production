@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,15 +34,15 @@ public class HistoryDetailService {
 					Objects.toString(dmuHistoryDetailListOpt, "Empty resultset"));
 
 			return dmuHistoryDetailListOpt.stream().map(dmuHistoryDetailObj -> {
-				return HistoryDetailDto.builder().schemaName(dmuHistoryDetailObj.getSchemaName())
-						.tableName(dmuHistoryDetailObj.getTableName())
+				return HistoryDetailDto.builder().requestNo(dmuHistoryDetailObj.getDmuHIstoryDetailPK().getRequestNo())
+						.srNo(dmuHistoryDetailObj.getDmuHIstoryDetailPK().getSrNo())
+						.schemaName(dmuHistoryDetailObj.getSchemaName()).tableName(dmuHistoryDetailObj.getTableName())
 						.filterCondition(dmuHistoryDetailObj.getFilterCondition())
-						.targetS3Bucket(dmuHistoryDetailObj.getTargetS3Bucket()) 
-						.incrementalClmn(dmuHistoryDetailObj.getIncrementalFlag())
+						.targetS3Bucket(dmuHistoryDetailObj.getTargetS3Bucket())
+						.incrementalFlag(dmuHistoryDetailObj.getIncrementalFlag())
 						.incrementalClmn(dmuHistoryDetailObj.getIncrementalClmn())
 						.status(dmuHistoryDetailObj.getStatus()).build();
 			}).collect(Collectors.toList());
-
 		} catch (Exception exception) {
 			log.info(" Exception occured at HistoryDetailService :: getAllHistoryDetailsByReq {} ",
 					ExceptionUtils.getStackTrace(exception));

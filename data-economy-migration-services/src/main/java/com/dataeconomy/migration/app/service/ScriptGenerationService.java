@@ -117,7 +117,7 @@ public class ScriptGenerationService {
 												String showTable = rs.getString(Constants.HDFS_LOCATION);
 												String storedAs = rs.getString(Constants.STORED_AS);
 												if (StringUtils.isNotBlank(showTable)) {
-													//path = (showTable.substring(3, showTable.length() - 1).trim());
+													// path = (showTable.substring(3, showTable.length() - 1).trim());
 												}
 											}
 											return null;
@@ -150,7 +150,7 @@ public class ScriptGenerationService {
 			historyDetailRepository.save(dmuHistoryDetail);
 			return;
 		}
-		StringBuilder sb = new StringBuilder(400);
+		StringBuilder sb = new StringBuilder(500);
 		if (Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcCmprsnFlag())
 				|| Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getUncmprsnFlag())) {
 			sb.append(connectionDto.getTgtOtherPropDto().getHadoopInstallDir());
@@ -205,15 +205,15 @@ public class ScriptGenerationService {
 		try {
 			StringBuilder sshBuilder = new StringBuilder();
 			sshBuilder.append("ssh -i ");
-			sb.append(" ");
-			sshBuilder.append(connectionDto.getTgtOtherPropDto().getHdfsEdgeNode());
+			sshBuilder.append(connectionDto.getTgtOtherPropDto().getHdfsPemLocation());
 			sb.append(" ");
 			sshBuilder.append(connectionDto.getTgtOtherPropDto().getHdfsUserName());
 			sb.append(" ");
-			sshBuilder.append(connectionDto.getTgtOtherPropDto().getHdfsPemLocation());
-			sb.append(sb.toString());
-			log.info(" ssh commands executi => " + sb.toString());
-			Process p = Runtime.getRuntime().exec(sb.toString());
+			sshBuilder.append(connectionDto.getTgtOtherPropDto().getHdfsEdgeNode());
+			sb.append(" ");
+			sshBuilder.append(sb.toString());
+			log.info(" ssh commands execution => " + sshBuilder.toString());
+			Process p = Runtime.getRuntime().exec(sshBuilder.toString());
 			InputStreamReader ise = new InputStreamReader(p.getErrorStream());
 			BufferedReader bre = new BufferedReader(ise);
 			InputStreamReader iso = new InputStreamReader(p.getInputStream());

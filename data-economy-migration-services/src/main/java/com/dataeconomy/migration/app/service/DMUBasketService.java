@@ -77,7 +77,7 @@ public class DMUBasketService {
 								.schemaName(basketObj.getSchemaName()).tableName(basketObj.getTableName())
 								.filterCondition(basketObj.getFilterCondition())
 								.targetS3Bucket(basketObj.getTargetS3Bucket())
-								.incrementalFlag(basketObj.getIncrementalFlag())
+								.incrementalFlag(basketObj.getIncrementalFlag()).requestType(basketObj.getRequestType())
 								.incrementalClmn(basketObj.getIncrementalClmn()).labelName(basketObj.getLabelName())
 								.build();
 					}).collect(Collectors.toList());
@@ -91,16 +91,18 @@ public class DMUBasketService {
 	public synchronized boolean saveBasketDetails(List<DMUBasketDto> dmuBasketDtoList, String userName)
 			throws DataMigrationException {
 		try {
+
 			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream()
 					.filter(basketDto -> basketDto.isAddtoBasket()).forEach(dmuBasketDto -> {
-						basketTempRepository.save(DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo())
-								.userId(dmuBasketDto.getUserId()).schemaName(dmuBasketDto.getSchemaName())
-								.tableName(dmuBasketDto.getTableName())
-								.filterCondition(dmuBasketDto.getFilterCondition())
-								.targetS3Bucket(dmuBasketDto.getSchemaName() + "/" + dmuBasketDto.getTargetS3Bucket())
-								.incrementalFlag(dmuBasketDto.getIncrementalFlag())
-								.incrementalClmn(dmuBasketDto.getIncrementalClmn())
-								.labelName(dmuBasketDto.getLabelName()).build());
+						basketTempRepository.save(
+								DMUBasketTemp.builder().srNo(dmuBasketDto.getSrNo()).userId(dmuBasketDto.getUserId())
+										.schemaName(dmuBasketDto.getSchemaName()).tableName(dmuBasketDto.getTableName())
+										.filterCondition(dmuBasketDto.getFilterCondition())
+										.targetS3Bucket(dmuBasketDto.getTargetS3Bucket())
+										.incrementalFlag(dmuBasketDto.getIncrementalFlag())
+										.requestType(dmuBasketDto.getRequestType())
+										.incrementalClmn(dmuBasketDto.getIncrementalClmn())
+										.labelName(dmuBasketDto.getLabelName()).build());
 					});
 			if (CollectionUtils.isNotEmpty(dmuBasketDtoList)) {
 				dmuPgtyRepository.save(DMUPtgyTemp.builder()

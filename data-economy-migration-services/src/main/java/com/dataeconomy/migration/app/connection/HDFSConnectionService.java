@@ -53,10 +53,12 @@ public class HDFSConnectionService {
 	public void initDataSourceConfig() {
 		try {
 			log.info(" initializing datasource connections while server start up ");
+			Class.forName(Constants.HIVE_DRIVER_CLASS_NAME).newInstance();
+			Class.forName(Constants.IMPALA_DRIVER_CLASS_NAME).newInstance();
 			ConnectionDto connectionDto = ConnectionDto.builder().build();
 			dmuHelperService.populateDMUAuthenticationProperties(connectionDto);
 			dmuHelperService.populateDMUHdfsProperties(connectionDto);
-			populateDataSourceConfig(connectionDto);
+			populateDataSourceConfigAtServerStarts(connectionDto);
 		} catch (Exception exception) {
 			log.error("Exception while creating datasources while server up {} ",
 					ExceptionUtils.getStackTrace(exception));
@@ -89,6 +91,42 @@ public class HDFSConnectionService {
 			}
 		}
 		if (StringUtils.equalsIgnoreCase(Constants.SPARK, connectionDto.getConnectionType())) {
+			Optional<String> sparkConnStringOpt = sparkConnectionService.getSparkConnectionDetails(connectionDto);
+			if (sparkConnStringOpt.isPresent()) {
+				String sparkConnString = sparkConnStringOpt.get();
+				log.info(" ConnectionService :: validateConnection :: sparkConnString {}", sparkConnString);
+			} else {
+				throw new DataMigrationException("Invalid Connection Details for SPARK connection Validation ");
+			}
+		}
+	}
+
+	public void populateDataSourceConfigAtServerStarts(ConnectionDto connectionDto) throws Exception {
+		if (connectionDto.isHiveConnEnabled()) {
+			Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
+			if (hiveConnStringOpt.isPresent()) {
+				String hiveConnString = hiveConnStringOpt.get();
+				DataSource hiveDataSource = retrieveDataSource(Constants.HIVE_CONN_POOL,
+						Constants.HIVE_DRIVER_CLASS_NAME, hiveConnString);
+				dataSourceMap.put(Constants.REGULAR, hiveDataSource);
+				log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
+			} else {
+				throw new DataMigrationException("Invalid Connection Details for HIVE connection Validation ");
+			}
+		}
+		if (connectionDto.isImpalaConnEnabled()) {
+			Optional<String> impalaConnStringOpt = imaplaConnectionService.getImpalaConnectionDetails(connectionDto);
+			if (impalaConnStringOpt.isPresent()) {
+				String impalaConnString = impalaConnStringOpt.get();
+				DataSource impalaDataSource = retrieveDataSource(Constants.IMPALA, Constants.IMPALA_DRIVER_CLASS_NAME,
+						impalaConnString);
+				dataSourceMap.put(Constants.LARGEQUERY, impalaDataSource);
+				log.info(" ConnectionService :: validateConnection :: impalaConnString {}", impalaConnString);
+			} else {
+				throw new DataMigrationException("Invalid Connection Details for IMPALA connection Validation ");
+			}
+		}
+		if (connectionDto.isSparkConnEnabled()) {
 			Optional<String> sparkConnStringOpt = sparkConnectionService.getSparkConnectionDetails(connectionDto);
 			if (sparkConnStringOpt.isPresent()) {
 				String sparkConnString = sparkConnStringOpt.get();

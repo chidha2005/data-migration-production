@@ -41,12 +41,11 @@ public class RequestProcessorClass {
 	@Autowired
 	private DMUHistoryMainRepository historyMainRepository;
 
-	@SuppressWarnings("rawtypes")
 	@Transactional
 	public void processRequest(String requestNo, TGTOtherProp tgtOtherPropOpt) {
 		try {
 			log.info("RequestProcessorClass invoked with requestNo : {}", requestNo);
-			historyMainRepository.updateForRequestNo(requestNo);
+			historyMainRepository.updateForRequestNo(Constants.IN_PROGRESS, requestNo);
 
 			List<DMUHistoryDetail> historyDetailsList = historyDetailRepository
 					.findHistoryDetailsByRequestNumber(requestNo);
@@ -62,7 +61,8 @@ public class RequestProcessorClass {
 					while (noOfJobs == 0) {
 						List<DMUHistoryDetail> inProgressCountTempList = historyDetailRepository
 								.findHistoryDetailsByRequestNoAndStatusList(requestNo, Constants.IN_PROGRESS);
-
+						log.info("RequestProcessorClass :: noOfJobs  :: inProgressCountTempList  {}",
+								inProgressCountTempList);
 						int inProgressCountTemp = 0;
 						if (inProgressCountTempList != null) {
 							inProgressCountTemp = inProgressCountTempList.size();
@@ -80,7 +80,7 @@ public class RequestProcessorClass {
 										noOfJobsTempCount > noOfJobs);
 								List<DMUHistoryDetail> dmuHistoryDetailList = historyDetailRepository
 										.findHistoryDetailsByRequestNoAndStatusList(requestNo, Constants.SUBMITTED);
-								ArrayList<Future> futureList = Lists.newArrayList();
+								ArrayList<Future<?>> futureList = Lists.newArrayList();
 
 								dmuHistoryDetailList.stream().limit(noOfJobsTempCount).forEach(entity -> {
 									futureList.add(requestProcessorThread.submit(new Callable<Void>() {

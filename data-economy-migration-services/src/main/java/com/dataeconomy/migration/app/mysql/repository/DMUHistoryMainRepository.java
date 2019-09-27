@@ -16,6 +16,9 @@ public interface DMUHistoryMainRepository extends JpaRepository<DMUHistoryMain, 
 
 	@Query("select history from DMUHistoryMain history where status in :ids ORDER BY requestedTime DESC")
 	List<DMUHistoryMain> findHistoryMainDetailsByStatus(@Param("ids") List<String> inventoryIdList);
+	
+	@Query("select history from DMUHistoryMain history where status = :status")
+	List<DMUHistoryMain> findHistoryMainDetailsByStatusScheduler(@Param("status") String status);
 
 	@Query("select new com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection(v.status , count(v) as cnt) from DMUHistoryMain v group by v.status")
 	public List<ReconAndRequestCountProjection> findReconHistoryStatusCount();
@@ -24,10 +27,14 @@ public interface DMUHistoryMainRepository extends JpaRepository<DMUHistoryMain, 
 	Long getTaskDetailsCount(@Param("statusValue") String statusValue);
 
 	@Modifying
-	@Query(" UPDATE DMUHistoryMain u SET u.status='In Progress' WHERE u.requestNo = :requestNo")
-	void updateForRequestNo(@Param("requestNo") String requestNo);
+	@Query(" UPDATE DMUHistoryMain u SET u.status= :status WHERE u.requestNo = :requestNo")
+	void updateForRequestNo(@Param("requestNo") String requestNo, @Param("status") String status);
 
 	@Query(" SELECT u FROM DMUHistoryMain u  WHERE u.requestNo = :requestNo")
 	DMUHistoryMain getDMUHistoryMainBySrNo(@Param("requestNo") String requestNo);
+
+	@Query("select history from DMUHistoryMain history where status = :status AND requestNo = :requestNo")
+	List<DMUHistoryMain> findHistoryMainDetailsByStatusAndRequestNo(@Param("status") String status,
+			@Param("requestNo") String requestNo);
 
 }

@@ -24,18 +24,11 @@ import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+//@Component
 @Slf4j
 public class DMUScheduler {
 
 	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-	private static List<String> STATUS_LIST = new ArrayList<String>() {
-		private static final long serialVersionUID = 1L;
-		{
-			add(Constants.SUBMITTED);
-		}
-	};
 
 	@Autowired
 	private TGTOtherPropRepository propOtherRepository;
@@ -49,7 +42,7 @@ public class DMUScheduler {
 	@Autowired
 	private ExecutorService cachedThreadPool;
 
-	@Scheduled(cron = "* */5 * * * ?")
+	//@Scheduled(cron = "* */5 * * * ?")
 	public void dmuScheduler() {
 		try {
 			log.info(" => dmuScheduler Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
@@ -62,7 +55,7 @@ public class DMUScheduler {
 			log.info(" => dmuScheduler Task :: parallelUsersRequest - {}", tgtOtherPropOpt.getParallelUsrRqst());
 			log.info(" => dmuScheduler Task :: parallelJobsRequest - {}", tgtOtherPropOpt.getParallelJobs());
 
-			if (taskInProgressCount < tgtOtherPropOpt.getParallelUsrRqst()) {
+			if (taskInProgressCount <= tgtOtherPropOpt.getParallelUsrRqst()) {
 				Long taskSubmittedCount = historyMainRepository.getTaskDetailsCount(Constants.SUBMITTED);
 				log.info(" => dmuScheduler Task :: taskSubmittedCount - {}", taskSubmittedCount);
 				if (taskSubmittedCount != 0) {
@@ -71,15 +64,15 @@ public class DMUScheduler {
 								" => parallel user requests greater than submitted count  - taskSubmittedCount :: {}  ",
 								taskSubmittedCount);
 						List<DMUHistoryMain> historyMainList = historyMainRepository
-								.findHistoryMainDetailsByStatus(STATUS_LIST);
+								.findHistoryMainDetailsByStatus(Constants.STATUS_LIST);
 						if (historyMainList != null && historyMainList.size() > 0) {
-							ArrayList<Future> futureList = Lists.newArrayList();
+							ArrayList<Future<?>> futureList = Lists.newArrayList();
 							historyMainList.stream().limit(taskSubmittedCount).forEach(entity -> {
-								futureList.add(cachedThreadPool.submit(new Callable<Void>() {
+								futureList.add(cachedThreadPool.submit(new Callable<Object>() {
 									@Override
-									public Void call() throws Exception {
+									public Object call() throws Exception {
 										requestProcessorClass.processRequest(entity.getRequestNo(), tgtOtherPropOpt);
-										return null;
+										return "Result of " + entity.getRequestNo();
 									};
 								}));
 							});
@@ -89,6 +82,8 @@ public class DMUScheduler {
 									try {
 										futureList.get(t).get();
 									} catch (InterruptedException | ExecutionException e) {
+										log.error(" => InterruptedException at DMUScheduler ::  - {}",
+												taskSubmittedCount);
 									}
 								}
 							}
@@ -97,11 +92,28 @@ public class DMUScheduler {
 						long count = (tgtOtherPropOpt.getParallelUsrRqst() - taskInProgressCount);
 						log.info(" => parallel user requests less than submitted count  - {} ", count);
 						List<DMUHistoryMain> historyMainList = historyMainRepository
-								.findHistoryMainDetailsByStatus(STATUS_LIST);
+								.findHistoryMainDetailsByStatus(Constants.STATUS_LIST);
 						if (historyMainList != null && historyMainList.size() > 0) {
-							for (int i = 0; i < count; i++) {
-								requestProcessorClass.processRequest(historyMainList.get(i).getRequestNo(),
-										tgtOtherPropOpt);
+							ArrayList<Future<?>> futureList = Lists.newArrayList();
+							historyMainList.stream().limit(count).forEach(entity -> {
+								futureList.add(cachedThreadPool.submit(new Callable<String>() {
+									@Override
+									public String call() throws Exception {
+										requestProcessorClass.processRequest(entity.getRequestNo(), tgtOtherPropOpt);
+										return "Result of " + entity.getRequestNo();
+									};
+								}));
+							});
+
+							if (!futureList.isEmpty()) {
+								for (int t = 0; t < futureList.size(); t++) {
+									try {
+										futureList.get(t).get();
+									} catch (InterruptedException | ExecutionException e) {
+										log.error(" => InterruptedException at DMUScheduler ::  - {}",
+												taskSubmittedCount);
+									}
+								}
 							}
 						}
 					}
@@ -112,10 +124,9 @@ public class DMUScheduler {
 				log.info(" => taskInProgressCount > parallelUserRequest -> so terminated the execution - {}");
 			}
 		} catch (Exception e) {
-			log.info(" => taskInProgressCount > parallelUserRequest -> so terminated the execution - {}",
+			log.error(" => taskInProgressCount > parallelUserRequest -> so terminated the execution - {}",
 					ExceptionUtils.getStackTrace(e));
 		}
-
 	}
 
 }

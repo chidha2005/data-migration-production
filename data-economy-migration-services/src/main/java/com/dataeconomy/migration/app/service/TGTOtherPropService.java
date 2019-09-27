@@ -30,11 +30,13 @@ public class TGTOtherPropService {
 			return Optional.ofNullable(tgtOtherPropList).orElse(new ArrayList<>()).stream().map(tgtOtherPropEntity -> {
 				return TGTOtherPropDto.builder().srNo(tgtOtherPropEntity.getSrNo())
 						.parallelJobs(tgtOtherPropEntity.getParallelJobs())
+						.tempHdfsDir(tgtOtherPropEntity.getHadoopInstallDir())
 						.parallelUsrRqst(tgtOtherPropEntity.getParallelUsrRqst())
 						.tempHiveDB(tgtOtherPropEntity.getTempHiveDB()).tempHdfsDir(tgtOtherPropEntity.getTempHdfsDir())
 						.tokenizationInd(tgtOtherPropEntity.getTokenizationInd())
 						.ptgyDirPath(tgtOtherPropEntity.getPtgyDirPath())
 						.hdfsEdgeNode(tgtOtherPropEntity.getHdfsEdgeNode())
+						.hadoopInstallDir(tgtOtherPropEntity.getHadoopInstallDir())
 						.hdfsPemLocation(tgtOtherPropEntity.getHdfsPemLocation()).build();
 			}).collect(Collectors.toList());
 		} catch (Exception exception) {
@@ -58,6 +60,7 @@ public class TGTOtherPropService {
 						.ptgyDirPath(tgtOtherPropEntity.getPtgyDirPath())
 						.hdfsEdgeNode(tgtOtherPropEntity.getHdfsEdgeNode())
 						.hdfsUserName(tgtOtherPropEntity.getHdfsUserName())
+						.hadoopInstallDir(tgtOtherPropEntity.getHadoopInstallDir())
 						.hdfsPemLocation(tgtOtherPropEntity.getHdfsPemLocation()).build();
 			}
 			return TGTOtherPropDto.builder().build();
@@ -76,6 +79,7 @@ public class TGTOtherPropService {
 					.tempHdfsDir(tgtOtherPropDto.getTempHdfsDir()).tokenizationInd(tgtOtherPropDto.getTokenizationInd())
 					.ptgyDirPath(tgtOtherPropDto.getPtgyDirPath()).hdfsEdgeNode(tgtOtherPropDto.getHdfsEdgeNode())
 					.hdfsUserName(tgtOtherPropDto.getHdfsUserName()).tempHdfsDir(tgtOtherPropDto.getHadoopInstallDir())
+					.hadoopInstallDir(tgtOtherPropDto.getHadoopInstallDir())
 					.hdfsPemLocation(tgtOtherPropDto.getHdfsPemLocation()).build();
 			tgtOtherPropRepository.save(tgtOtherProp);
 			return tgtOtherPropDto;

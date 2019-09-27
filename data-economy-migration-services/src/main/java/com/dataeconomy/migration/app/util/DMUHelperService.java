@@ -109,16 +109,24 @@ public class DMUHelperService {
 					tgtFormatPropEntity.setOrcFormatFlag(Constants.YES);
 				} else if (StringUtils.equalsIgnoreCase(Constants.PARQUET, tgtFormatPropObj.getFormatType())) {
 					tgtFormatPropEntity.setParquetFormatFlag(Constants.YES);
-				} else if (StringUtils.equalsIgnoreCase(Constants.UN_COMPRESSED, tgtFormatPropObj.getFormatType())) {
-					tgtFormatPropEntity.setUncmprsnFlag(Constants.YES);
-				} else if (StringUtils.equalsIgnoreCase(Constants.GZIP, tgtFormatPropObj.getFormatType())) {
-					tgtFormatPropEntity.setGzipCmprsnFlag(Constants.YES);
 				} else if (StringUtils.equalsIgnoreCase(Constants.AVRO, tgtFormatPropObj.getFormatType())) {
 					tgtFormatPropEntity.setAvroFormatFlag(Constants.YES);
 				} else if (StringUtils.equalsIgnoreCase(Constants.SRC_COMPRESSION, tgtFormatPropObj.getFormatType())) {
 					tgtFormatPropEntity.setSrcCmprsnFlag(Constants.YES);
 				}
 
+				if (tgtFormatPropObj.getCompressionType() != null
+						&& tgtFormatPropObj.getCompressionType().equalsIgnoreCase(Constants.SRC_COMPRESSION)) {
+					tgtFormatPropEntity.setSrcCmprsnFlag(Constants.YES);
+				} else if (StringUtils.equalsIgnoreCase(Constants.UN_COMPRESSED,
+						tgtFormatPropObj.getCompressionType())) {
+					tgtFormatPropEntity.setUncmprsnFlag(Constants.YES);
+				} else if (StringUtils.equalsIgnoreCase(Constants.GZIP, tgtFormatPropObj.getCompressionType())) {
+					tgtFormatPropEntity.setGzipCmprsnFlag(Constants.YES);
+				} else {
+					tgtFormatPropEntity.setSrcCmprsnFlag(Constants.NO);
+				}
+				System.out.println("**Compressiontype***" + tgtFormatPropObj.getCompressionType());
 				tgtFormatPropRepository.save(tgtFormatPropEntity);
 			}
 		}
@@ -278,6 +286,7 @@ public class DMUHelperService {
 					.tempHdfsDir(tgtOtherPropObj.getTempHdfsDir()).tokenizationInd(tgtOtherPropObj.getTokenizationInd())
 					.ptgyDirPath(tgtOtherPropObj.getPtgyDirPath()).hdfsEdgeNode(tgtOtherPropObj.getHdfsEdgeNode())
 					.hdfsPemLocation(tgtOtherPropObj.getHdfsPemLocation())
+					.hadoopInstallDir(tgtOtherPropObj.getHadoopInstallDir())
 					.hdfsUserName(tgtOtherPropObj.getHdfsUserName()).build());
 		}
 	}
@@ -295,19 +304,27 @@ public class DMUHelperService {
 				tgtFormatPropTempDto.setFormatType(Constants.SEQUENCE);
 			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getRcFormatFlag())) {
 				tgtFormatPropTempDto.setFormatType(Constants.RECORD_COLUMNAR);
-			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getFieldDelimiter())) {
-				tgtFormatPropTempDto.setFieldDelimiter(Constants.YES);
 			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getOrcFormatFlag())) {
 				tgtFormatPropTempDto.setFormatType(Constants.ORC);
 			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getParquetFormatFlag())) {
 				tgtFormatPropTempDto.setFormatType(Constants.PARQUET);
-			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getUncmprsnFlag())) {
-				tgtFormatPropTempDto.setFormatType(Constants.UN_COMPRESSED);
-			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getGzipCmprsnFlag())) {
-				tgtFormatPropTempDto.setFormatType(Constants.GZIP);
-			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getSrcCmprsnFlag())) {
-				tgtFormatPropTempDto.setFormatType(Constants.SRC_COMPRESSION);
 			}
+
+			if (StringUtils.isNotBlank(tgtFormatPropObj.getFieldDelimiter())) {
+				tgtFormatPropTempDto.setFieldDelimiter(tgtFormatPropObj.getFieldDelimiter());
+			}
+
+			if (StringUtils.isNotBlank(tgtFormatPropObj.getUncmprsnFlag())
+					&& tgtFormatPropObj.getUncmprsnFlag().equalsIgnoreCase(Constants.YES)) {
+				tgtFormatPropTempDto.setCompressionType(Constants.UN_COMPRESSED);
+			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getGzipCmprsnFlag())
+					&& tgtFormatPropObj.getGzipCmprsnFlag().equalsIgnoreCase(Constants.YES)) {
+				tgtFormatPropTempDto.setCompressionType(Constants.GZIP);
+			} else if (StringUtils.isNotBlank(tgtFormatPropObj.getSrcCmprsnFlag())
+					&& tgtFormatPropObj.getSrcCmprsnFlag().equalsIgnoreCase(Constants.YES)) {
+				tgtFormatPropTempDto.setCompressionType(Constants.SRC_COMPRESSION);
+			}
+
 			connectionDto.setTgtFormatPropTempDto(tgtFormatPropTempDto);
 		}
 	}

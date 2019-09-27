@@ -1,5 +1,8 @@
 package com.dataeconomy.migration.app.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class Constants {
 
 	private Constants() {
@@ -66,5 +69,19 @@ public final class Constants {
 	public static final String STORED_AS = "STORED_AS";
 	public static final String DIRECT_HDFS = "DIRHDFS";
 	public static final String SUCCESS = "Successful";
+
+	public static List<String> STATUS_LIST = new ArrayList<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			add(Constants.SUBMITTED);
+		}
+	};
+
+	public static List<String> SUBMITTED_LIST = new ArrayList<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			add(Constants.SUBMITTED);
+		}
+	};
 
 }
