@@ -49,9 +49,13 @@ public class DMUReconMainService {
 			Optional<DMUReconMain> reconDetailsEntity = dmuReconMainRepository.findById(requestNo);
 			if (reconDetailsEntity.isPresent()) {
 				DMUReconMain dmuReconMain = reconDetailsEntity.get();
-				return DMUReconMainDto.builder().requestNo(dmuReconMain.getRequestNo()).userId(dmuReconMain.getUserId())
-						.requestedTime(dmuReconMain.getRequestedTime()).status(dmuReconMain.getStatus())
-						.requestType(dmuReconMain.getRequestType()).reconStartTime(dmuReconMain.getReconStartTime())
+				return DMUReconMainDto.builder()
+						.requestNo(dmuReconMain.getRequestNo())
+						.userId(dmuReconMain.getUserId())
+						.requestedTime(dmuReconMain.getRequestedTime())
+						.status(dmuReconMain.getStatus())
+						.requestType(dmuReconMain.getRequestType())
+						.reconStartTime(dmuReconMain.getReconStartTime())
 						.reconCmpltTime(dmuReconMain.getReconCmpltTime()).build();
 			}
 			return DMUReconMainDto.builder().build();

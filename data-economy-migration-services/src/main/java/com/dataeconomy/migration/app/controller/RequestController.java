@@ -16,8 +16,4 @@ public class RequestController {
 	@Autowired
 	private RequestService requestService;
 
-	@GetMapping("/databases")
-	public List<String> getAllRequestDatabases() {
-		return requestService.getAllRequestDatabases();
-	}
 }
