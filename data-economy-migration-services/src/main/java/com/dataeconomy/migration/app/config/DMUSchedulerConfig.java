@@ -5,7 +5,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 //@Configuration
-public class DMUSchedulerConfig implements SchedulingConfigurer {
+public class DmuSchedulerConfig implements SchedulingConfigurer {
 
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {

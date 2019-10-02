@@ -12,8 +12,8 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,20 +21,20 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.dataeconomy.migration.app.connection.AWSConnectionService;
-import com.dataeconomy.migration.app.connection.HDFSConnectionService;
-import com.dataeconomy.migration.app.model.ConnectionDto;
-import com.dataeconomy.migration.app.model.TGTFormatPropDto;
-import com.dataeconomy.migration.app.model.TGTOtherPropDto;
-import com.dataeconomy.migration.app.mysql.entity.DMUHistoryDetail;
-import com.dataeconomy.migration.app.mysql.entity.TGTFormatProp;
-import com.dataeconomy.migration.app.mysql.entity.TGTOtherProp;
-import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
-import com.dataeconomy.migration.app.mysql.repository.HistoryDetailRepository;
-import com.dataeconomy.migration.app.mysql.repository.TGTFormatPropRepository;
-import com.dataeconomy.migration.app.mysql.repository.TGTOtherPropRepository;
-import com.dataeconomy.migration.app.util.Constants;
-import com.dataeconomy.migration.app.util.StatusConstants;
+import com.dataeconomy.migration.app.aop.Timed;
+import com.dataeconomy.migration.app.connection.DmuAwsConnectionService;
+import com.dataeconomy.migration.app.connection.DmuHdfsConnectionService;
+import com.dataeconomy.migration.app.model.DmuConnectionDTO;
+import com.dataeconomy.migration.app.model.DmuTgtFormatPropDTO;
+import com.dataeconomy.migration.app.model.DmuTgtOtherPropDTO;
+import com.dataeconomy.migration.app.mysql.entity.DmuHistoryDetailEntity;
+import com.dataeconomy.migration.app.mysql.entity.DmuTgtFormatEntity;
+import com.dataeconomy.migration.app.mysql.entity.DmuTgtOtherPropEntity;
+import com.dataeconomy.migration.app.mysql.repository.DmuHistoryDetailRepository;
+import com.dataeconomy.migration.app.mysql.repository.DmuTgtFormatPropRepository;
+import com.dataeconomy.migration.app.mysql.repository.DmuTgtOtherPropRepository;
+import com.dataeconomy.migration.app.util.DmuConstants;
+import com.dataeconomy.migration.app.util.DmuStatusConstants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,49 +43,48 @@ import lombok.extern.slf4j.Slf4j;
 public class ScriptGenerationService {
 
 	@Autowired
-	private DMUHistoryMainRepository dmuHistoryMainRepository;
+	private DmuHistoryDetailRepository historyDetailRepository;
 
 	@Autowired
-	private HistoryDetailRepository historyDetailRepository;
+	private DmuHdfsConnectionService hdfsConnectionService;
 
 	@Autowired
-	private HDFSConnectionService hdfsConnectionService;
+	private DmuTgtFormatPropRepository tgtFormatPropRepository;
 
 	@Autowired
-	private TGTFormatPropRepository tgtFormatPropRepository;
+	private DmuTgtOtherPropRepository tgtOtherPropRepository;
 
 	@Autowired
-	private TGTOtherPropRepository tgtOtherPropRepository;
-
-	@Autowired
-	private AWSConnectionService awsConnectionService;
+	private DmuAwsConnectionService awsConnectionService;
 
 	@Transactional
+	@Timed
 	public void proceedScriptGenerationForRequest(String requestNo, Long srNo) {
 		log.info("ScriptGenerationService ::  proceedScriptGenerationForRequest :: requestNo :: {}  :: srNo {} ",
 				requestNo, srNo);
 		try {
-			Optional<List<DMUHistoryDetail>> dmuHistoryDetailListOpt = Optional
+			Optional<List<DmuHistoryDetailEntity>> dmuHistoryDetailListOpt = Optional
 					.ofNullable(historyDetailRepository.findHistoryDetailsByRequestNumberAndSrNo(requestNo, srNo));
 
 			if (dmuHistoryDetailListOpt.isPresent()) {
 				dmuHistoryDetailListOpt.get().stream().forEach(dmuHistoryDetail -> {
 
-					dmuHistoryDetail.setStatus(Constants.IN_PROGRESS);
+					dmuHistoryDetail.setStatus(DmuConstants.IN_PROGRESS);
 					historyDetailRepository.save(dmuHistoryDetail);
 
-					Optional<TGTFormatProp> tgtFormatProp = tgtFormatPropRepository.findById(1L);
-					Optional<TGTOtherProp> tgtOtherProp = tgtOtherPropRepository.findById(1L);
-					ConnectionDto connectionDto = ConnectionDto.builder().build();
+					Optional<DmuTgtFormatEntity> tgtFormatProp = tgtFormatPropRepository.findById(1L);
+					Optional<DmuTgtOtherPropEntity> tgtOtherProp = tgtOtherPropRepository.findById(1L);
+					DmuConnectionDTO connectionDto = DmuConnectionDTO.builder().build();
 					populateTGTFormatProperties(connectionDto, tgtFormatProp);
 					populateTGTOtherProperties(connectionDto, tgtOtherProp);
 
 					if (StringUtils.isBlank(dmuHistoryDetail.getFilterCondition())
-							&& Constants.NO.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())
-							&& Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
+							&& DmuConstants.NO.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())
+							&& DmuConstants.YES
+									.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
 						String hdfspath = invokeHDFSService(dmuHistoryDetail);
 						if (StringUtils.isBlank(hdfspath)) {
-							dmuHistoryDetail.setStatus(Constants.FAILED);
+							dmuHistoryDetail.setStatus(DmuConstants.FAILED);
 							historyDetailRepository.save(dmuHistoryDetail);
 							// TODO application.log created and store it in server log with date and time
 							// Have the error ( “File Path not found in Create Table Statement”) stored in a
@@ -97,13 +96,13 @@ public class ScriptGenerationService {
 							proceedScriptGenerationForRequestHelper(dmuHistoryDetail, hdfspath, connectionDto,
 									requestNo);
 						}
-					} else if (Constants.YES.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())) {
-						dmuHistoryDetail.setStatus(Constants.NEW_SCENARIO);
+					} else if (DmuConstants.YES.equalsIgnoreCase(dmuHistoryDetail.getIncrementalFlag())) {
+						dmuHistoryDetail.setStatus(DmuConstants.NEW_SCENARIO);
 						historyDetailRepository.save(dmuHistoryDetail);
-					} else if (StringUtils.isNotBlank(dmuHistoryDetail.getFilterCondition())
-							&& Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
+					} else if (StringUtils.isNotBlank(dmuHistoryDetail.getFilterCondition()) && DmuConstants.YES
+							.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcFormatFlag())) {
 						try {
-							DataSource dataSource = hdfsConnectionService.getValidDataSource(Constants.SMALLQUERY);
+							DataSource dataSource = hdfsConnectionService.getValidDataSource(DmuConstants.SMALLQUERY);
 							String path = "";
 							String stored = "";
 							path = new JdbcTemplate(dataSource).query(
@@ -114,8 +113,8 @@ public class ScriptGenerationService {
 										public String extractData(ResultSet rs)
 												throws SQLException, DataAccessException {
 											while (rs.next()) {
-												String showTable = rs.getString(Constants.HDFS_LOCATION);
-												String storedAs = rs.getString(Constants.STORED_AS);
+												String showTable = rs.getString(DmuConstants.HDFS_LOCATION);
+												String storedAs = rs.getString(DmuConstants.STORED_AS);
 												if (StringUtils.isNotBlank(showTable)) {
 													// path = (showTable.substring(3, showTable.length() - 1).trim());
 												}
@@ -124,7 +123,7 @@ public class ScriptGenerationService {
 										}
 									});
 						} catch (Exception exception) {
-							dmuHistoryDetail.setStatus(Constants.FAILED);
+							dmuHistoryDetail.setStatus(DmuConstants.FAILED);
 							historyDetailRepository.save(dmuHistoryDetail);
 						}
 					}
@@ -139,20 +138,20 @@ public class ScriptGenerationService {
 		}
 	}
 
-	private void proceedScriptGenerationForRequestHelper(DMUHistoryDetail dmuHistoryDetail, String hdfsPath,
-			ConnectionDto connectionDto, String requestNo) {
+	private void proceedScriptGenerationForRequestHelper(DmuHistoryDetailEntity dmuHistoryDetail, String hdfsPath,
+			DmuConnectionDTO connectionDto, String requestNo) {
 		log.info(
 				"called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: proceedScriptGenerationForRequestHelper :: hdfsPath {} :: busketName :: {} ",
 				hdfsPath, dmuHistoryDetail.getTargetS3Bucket());
 		BasicSessionCredentials awsCredentials = awsConnectionService.getBasicSessionCredentials();
 		if (awsCredentials == null) {
-			dmuHistoryDetail.setStatus(Constants.FAILED);
+			dmuHistoryDetail.setStatus(DmuConstants.FAILED);
 			historyDetailRepository.save(dmuHistoryDetail);
 			return;
 		}
 		StringBuilder sb = new StringBuilder(500);
-		if (Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcCmprsnFlag())
-				|| Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getUncmprsnFlag())) {
+		if (DmuConstants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getSrcCmprsnFlag())
+				|| DmuConstants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getUncmprsnFlag())) {
 			sb.append(connectionDto.getTgtOtherPropDto().getHadoopInstallDir());
 			sb.append(
 					"/bin/hadoop distcp -Dfs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider -Dfs.s3a.access.key=");
@@ -165,7 +164,7 @@ public class ScriptGenerationService {
 			sb.append(hdfsPath);
 			sb.append("/* s3a://");
 			sb.append(dmuHistoryDetail.getTargetS3Bucket());
-		} else if (Constants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getGzipCmprsnFlag())) {
+		} else if (DmuConstants.YES.equalsIgnoreCase(connectionDto.getTgtFormatPropDto().getGzipCmprsnFlag())) {
 			sb.append(" mkdir ");
 			sb.append(connectionDto.getTgtOtherPropDto().getTempHdfsDir());
 			sb.append("/");
@@ -239,17 +238,17 @@ public class ScriptGenerationService {
 					hdfsPath, dmuHistoryDetail.getTargetS3Bucket(), errorLine);
 			int exitVal = p.waitFor();
 			if (exitVal == 0) {
-				dmuHistoryDetail.setStatus(StatusConstants.HttpConstants.SUCCESS.name());
+				dmuHistoryDetail.setStatus(DmuStatusConstants.HttpConstants.SUCCESS.name());
 				historyDetailRepository.save(dmuHistoryDetail);
 				log.info(
 						"called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: proceedScriptGenerationForRequestHelper :: hiveLocation {} :: busketName :: {} :: status => {} ",
-						hdfsPath, dmuHistoryDetail.getTargetS3Bucket(), StatusConstants.HttpConstants.SUCCESS);
+						hdfsPath, dmuHistoryDetail.getTargetS3Bucket(), DmuStatusConstants.HttpConstants.SUCCESS);
 			} else {
-				dmuHistoryDetail.setStatus(StatusConstants.HttpConstants.FAILURE.name());
+				dmuHistoryDetail.setStatus(DmuStatusConstants.HttpConstants.FAILURE.name());
 				historyDetailRepository.save(dmuHistoryDetail);
 				log.info(
 						"called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: proceedScriptGenerationForRequestHelper :: hiveLocation {} :: busketName :: {} :: status => {} ",
-						hdfsPath, dmuHistoryDetail.getTargetS3Bucket(), StatusConstants.HttpConstants.FAILURE);
+						hdfsPath, dmuHistoryDetail.getTargetS3Bucket(), DmuStatusConstants.HttpConstants.FAILURE);
 			}
 		} catch (Exception exception) {
 			log.error(
@@ -258,17 +257,17 @@ public class ScriptGenerationService {
 		}
 	}
 
-	private String invokeHDFSService(DMUHistoryDetail dmuHistoryDetail) {
+	private String invokeHDFSService(DmuHistoryDetailEntity dmuHistoryDetail) {
 		log.info(" called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService ");
 		try {
-			return new JdbcTemplate(hdfsConnectionService.getValidDataSource(Constants.REGULAR))
+			return new JdbcTemplate(hdfsConnectionService.getValidDataSource(DmuConstants.REGULAR))
 					.query("SHOW CREATE TABLE " + dmuHistoryDetail.getSchemaName(), new ResultSetExtractor<String>() {
 
 						@Override
 						public String extractData(ResultSet rs) throws SQLException, DataAccessException {
 							while (rs.next()) {
 								String showTable = rs.getString(1);
-								if (StringUtils.equalsIgnoreCase(showTable, Constants.HDFS_LOCATION)) {
+								if (StringUtils.equalsIgnoreCase(showTable, DmuConstants.HDFS_LOCATION)) {
 									return (showTable.substring(3, showTable.length() - 1).trim());
 								}
 							}
@@ -276,7 +275,7 @@ public class ScriptGenerationService {
 						}
 					});
 		} catch (Exception exception) {
-			dmuHistoryDetail.setStatus(Constants.FAILED);
+			dmuHistoryDetail.setStatus(DmuConstants.FAILED);
 			historyDetailRepository.save(dmuHistoryDetail);
 			log.error(
 					"Exception occurred at ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService :: {}   ",
@@ -286,11 +285,11 @@ public class ScriptGenerationService {
 		}
 	}
 
-	private String invokeHDFSServiceForFilterCondition(DMUHistoryDetail dmuHistoryDetail) {
+	private String invokeHDFSServiceForFilterCondition(DmuHistoryDetailEntity dmuHistoryDetail) {
 		log.info(" called=> ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService ");
 		try {
 			Map<String, String> map = new HashMap<>();
-			new JdbcTemplate(hdfsConnectionService.getValidDataSource(Constants.SMALLQUERY)).query(
+			new JdbcTemplate(hdfsConnectionService.getValidDataSource(DmuConstants.SMALLQUERY)).query(
 					" SELECT COUNT(*) FROM" + dmuHistoryDetail.getSchemaName() + "." + dmuHistoryDetail.getTableName()
 							+ "WHERE " + dmuHistoryDetail.getFilterCondition(),
 					new ResultSetExtractor<String>() {
@@ -298,8 +297,8 @@ public class ScriptGenerationService {
 						@Override
 						public String extractData(ResultSet rs) throws SQLException, DataAccessException {
 							while (rs.next()) {
-								String showTable = rs.getString(Constants.HDFS_LOCATION);
-								String storedAs = rs.getString(Constants.STORED_AS);
+								String showTable = rs.getString(DmuConstants.HDFS_LOCATION);
+								String storedAs = rs.getString(DmuConstants.STORED_AS);
 								map.put("HDFS_PATH", (showTable.substring(3, showTable.length() - 1).trim()));
 								map.put("STORED_AS", (showTable.substring(3, storedAs.length() - 1).trim()));
 							}
@@ -308,7 +307,7 @@ public class ScriptGenerationService {
 					});
 			return null;
 		} catch (Exception exception) {
-			dmuHistoryDetail.setStatus(Constants.FAILED);
+			dmuHistoryDetail.setStatus(DmuConstants.FAILED);
 			historyDetailRepository.save(dmuHistoryDetail);
 			log.error(
 					"Exception occurred at ScriptGenerationService ::  proceedScriptGenerationForRequest :: invokeHDFSService :: {}   ",
@@ -318,10 +317,12 @@ public class ScriptGenerationService {
 		}
 	}
 
-	private void populateTGTOtherProperties(ConnectionDto connectionDto, Optional<TGTOtherProp> tgtOtherProp) {
+	private void populateTGTOtherProperties(DmuConnectionDTO connectionDto,
+			Optional<DmuTgtOtherPropEntity> tgtOtherProp) {
 		if (tgtOtherProp.isPresent()) {
-			TGTOtherProp tgtOtherPropObj = tgtOtherProp.get();
-			connectionDto.setTgtOtherPropDto(TGTOtherPropDto.builder().parallelJobs(tgtOtherPropObj.getParallelJobs())
+			DmuTgtOtherPropEntity tgtOtherPropObj = tgtOtherProp.get();
+			connectionDto.setTgtOtherPropDto(DmuTgtOtherPropDTO.builder()
+					.parallelJobs(tgtOtherPropObj.getParallelJobs())
 					.parallelUsrRqst(tgtOtherPropObj.getParallelUsrRqst()).tempHiveDB(tgtOtherPropObj.getTempHiveDB())
 					.tempHdfsDir(tgtOtherPropObj.getTempHdfsDir()).tokenizationInd(tgtOtherPropObj.getTokenizationInd())
 					.ptgyDirPath(tgtOtherPropObj.getPtgyDirPath()).hdfsEdgeNode(tgtOtherPropObj.getHdfsEdgeNode())
@@ -331,10 +332,11 @@ public class ScriptGenerationService {
 		}
 	}
 
-	private void populateTGTFormatProperties(ConnectionDto connectionDto, Optional<TGTFormatProp> tgtFormatProp) {
+	private void populateTGTFormatProperties(DmuConnectionDTO connectionDto,
+			Optional<DmuTgtFormatEntity> tgtFormatProp) {
 		if (tgtFormatProp.isPresent()) {
-			TGTFormatProp tgtFormatPropObj = tgtFormatProp.get();
-			connectionDto.setTgtFormatPropDto(TGTFormatPropDto.builder()
+			DmuTgtFormatEntity tgtFormatPropObj = tgtFormatProp.get();
+			connectionDto.setTgtFormatPropDto(DmuTgtFormatPropDTO.builder()
 					.textFormatFlag(tgtFormatPropObj.getTextFormatFlag())
 					.srcFormatFlag(tgtFormatPropObj.getSrcFormatFlag())
 					.fieldDelimiter(tgtFormatPropObj.getFieldDelimiter())

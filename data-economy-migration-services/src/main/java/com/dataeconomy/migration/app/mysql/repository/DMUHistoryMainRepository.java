@@ -10,35 +10,36 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
-import com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection;
+import com.dataeconomy.migration.app.mysql.entity.DmuHistoryMainEntity;
+import com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection;
 
 @Repository
-public interface DMUHistoryMainRepository extends JpaRepository<DMUHistoryMain, String> {
+public interface DmuHistoryMainRepository extends JpaRepository<DmuHistoryMainEntity, String> {
 
-	@Query("select history from DMUHistoryMain history where status in :ids ORDER BY requestedTime DESC")
-	List<DMUHistoryMain> findHistoryMainDetailsByStatus(@Param("ids") List<String> inventoryIdList);
+	@Query("select history from DmuHistoryMainEntity history where history.status in :ids ORDER BY history.requestedTime DESC")
+	List<DmuHistoryMainEntity> findHistoryMainDetailsByStatus(@Param("ids") List<String> inventoryIdList);
 
-	@Query("select history from DMUHistoryMain history where status = :status")
-	List<DMUHistoryMain> findHistoryMainDetailsByStatusScheduler(@Param("status") String status);
+	@Query("select history from DmuHistoryMainEntity history where history.status = :status ORDER BY history.requestedTime DESC")
+	List<DmuHistoryMainEntity> findHistoryMainDetailsByStatusScheduler(@Param("status") String status);
 
-	@Query("select new com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection(v.status , count(v) as cnt) from DMUHistoryMain v group by v.status")
-	public List<ReconAndRequestCountProjection> findReconHistoryStatusCount();
+	@Query("select new com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection(v.status , count(v) as cnt) from DmuHistoryMainEntity v group by v.status")
+	public List<DmuReconAndRequestCountProjection> findReconHistoryStatusCount(); 
 
-	@Query("SELECT COUNT(u) FROM DMUHistoryMain u WHERE u.status=:statusValue")
+	@Query("SELECT COUNT(u.status) FROM DmuHistoryMainEntity u WHERE u.status=:statusValue")
 	Long getTaskDetailsCount(@Param("statusValue") String statusValue);
 
 	@Modifying
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query(" UPDATE DMUHistoryMain u SET u.status= :status WHERE u.requestNo = :requestNo")
+	@Query(" UPDATE DmuHistoryMainEntity u SET u.status= :status WHERE u.requestNo = :requestNo")
+	@Transactional
 	void updateForRequestNo(@Param("requestNo") String requestNo, @Param("status") String status);
 
-	@Query(" SELECT u FROM DMUHistoryMain u  WHERE u.requestNo = :requestNo")
-	DMUHistoryMain getDMUHistoryMainBySrNo(@Param("requestNo") String requestNo);
+	@Query(" SELECT u FROM DmuHistoryMainEntity u  WHERE u.requestNo = :requestNo")
+	DmuHistoryMainEntity getDMUHistoryMainBySrNo(@Param("requestNo") String requestNo);
 
-	@Query("select history from DMUHistoryMain history where status = :status AND requestNo = :requestNo")
-	List<DMUHistoryMain> findHistoryMainDetailsByStatusAndRequestNo(@Param("status") String status,
+	@Query("select history from DmuHistoryMainEntity history where status = :status AND requestNo = :requestNo")
+	List<DmuHistoryMainEntity> findHistoryMainDetailsByStatusAndRequestNo(@Param("status") String status,
 			@Param("requestNo") String requestNo);
 
 }

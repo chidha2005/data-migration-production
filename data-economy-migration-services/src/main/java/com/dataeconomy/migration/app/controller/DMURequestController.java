@@ -10,20 +10,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dataeconomy.migration.app.model.ConnectionDto;
-import com.dataeconomy.migration.app.model.DMUBasketDto;
-import com.dataeconomy.migration.app.model.HistoryMainDto;
-import com.dataeconomy.migration.app.service.DMURequestService;
+import com.dataeconomy.migration.app.model.DmuBasketDTO;
+import com.dataeconomy.migration.app.model.DmuHistoryDTO;
+import com.dataeconomy.migration.app.service.DmuRequestService;
 
 @RestController
 @RequestMapping("/datamigration/request")
-public class DMURequestController {
+public class DmuRequestController {
 
 	@Autowired
-	private DMURequestService dmuRequestService;
+	private DmuRequestService dmuRequestService;
 
 	@PostMapping("/save")
-	public List<ConnectionDto> saveRequest(@RequestBody HistoryMainDto historyMainDto) {
+	public boolean saveRequest(@RequestBody DmuHistoryDTO historyMainDto) {
 		return dmuRequestService.saveRequest(historyMainDto);
 	}
 
@@ -33,7 +32,7 @@ public class DMURequestController {
 	}
 
 	@GetMapping("/all/{databaseName}")
-	public List<DMUBasketDto> getAllTablesForGivenDatabase(@PathVariable(name = "databaseName") String databaseName) {
+	public List<DmuBasketDTO> getAllTablesForGivenDatabase(@PathVariable(name = "databaseName") String databaseName) {
 		return dmuRequestService.getAllTablesForGivenDatabase(databaseName);
 	}
 

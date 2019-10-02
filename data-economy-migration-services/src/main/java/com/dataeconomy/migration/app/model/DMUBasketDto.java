@@ -6,10 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class DMUBasketDto {
+public class DmuBasketDTO {
 
 	private Long srNo;
 
@@ -36,5 +36,4 @@ public class DMUBasketDto {
 	private String requestType;
 
 	private boolean addtoBasket;
-
 }

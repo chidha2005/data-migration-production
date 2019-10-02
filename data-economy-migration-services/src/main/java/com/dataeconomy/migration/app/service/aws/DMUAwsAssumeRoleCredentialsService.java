@@ -13,16 +13,16 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
-import com.dataeconomy.migration.app.model.ConnectionDto;
-import com.dataeconomy.migration.app.util.Constants;
+import com.dataeconomy.migration.app.model.DmuConnectionDTO;
+import com.dataeconomy.migration.app.util.DmuConstants;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class DMUAwsAssumeRoleCredentialsService {
+public class DmuAwsAssumeRoleCredentialsService {
 
-	public Optional<BasicSessionCredentials> getAwsAssumeRoleRequestCredentials(ConnectionDto connectionDto)
+	public Optional<BasicSessionCredentials> getAwsAssumeRoleRequestCredentials(DmuConnectionDTO connectionDto)
 			throws DataMigrationException {
 		log.info("called => DMUAwsAssumeRoleCredentialsService :: getAwsAssumeRoleRequestCredentials  ");
 		try {
@@ -34,7 +34,7 @@ public class DMUAwsAssumeRoleCredentialsService {
 					connectionDto.getAwsSecretKeySc());
 			AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard()
 					.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-					.withRegion(Constants.CLIENT_REGION)
+					.withRegion(DmuConstants.CLIENT_REGION)
 					//.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://localhost:9998/",
 							//Constants.CLIENT_REGION))
 					.build();

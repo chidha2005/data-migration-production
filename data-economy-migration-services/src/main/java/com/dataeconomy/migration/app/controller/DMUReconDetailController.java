@@ -8,23 +8,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dataeconomy.migration.app.model.DMUReconDetailDto;
-import com.dataeconomy.migration.app.service.DMUReconDetailService;
+import com.dataeconomy.migration.app.model.DmuReconDetailDTO;
+import com.dataeconomy.migration.app.service.DmuReconDetailService;
 
 @RestController
 @RequestMapping("/datamigration/recon/detail")
-public class DMUReconDetailController {
+public class DmuReconDetailController {
 
 	@Autowired
-	private DMUReconDetailService dmuReconDetailService;
+	private DmuReconDetailService dmuReconDetailService;
 
 	@GetMapping("/details/{requestNo}")
-	public List<DMUReconDetailDto> getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
+	public List<DmuReconDetailDTO> getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
 		return dmuReconDetailService.getReconDetailsBySearch(requestNo);
 	}
 
 	@GetMapping("/all")
-	public List<DMUReconDetailDto> getAllDatabases() {
+	public List<DmuReconDetailDTO> getAllDatabases() {
 		return dmuReconDetailService.getDMUReconDetailsList();
 	}
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DMUS3Dto {
+public class DmuS3DTO {
 
 	private Long srNo;
 

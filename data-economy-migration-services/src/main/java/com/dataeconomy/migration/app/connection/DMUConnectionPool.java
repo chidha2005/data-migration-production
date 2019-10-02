@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class DMUConnectionPool {
+public class DmuConnectionPool {
 
 	public HikariDataSource getDataSourceFromConfig(String connectionPoolName, String driverClassName,
 			String databaseUrl) {
@@ -19,8 +19,11 @@ public class DMUConnectionPool {
 
 		HikariConfig jdbcConfig = new HikariConfig();
 		jdbcConfig.setPoolName(connectionPoolName);
-		jdbcConfig.setMaximumPoolSize(10);
+		jdbcConfig.setMaximumPoolSize(20);
 		jdbcConfig.setMinimumIdle(5);
+		jdbcConfig.setMaxLifetime(2000000);
+		jdbcConfig.setConnectionTimeout(30000);
+		jdbcConfig.setIdleTimeout(30000);
 		jdbcConfig.setJdbcUrl(databaseUrl);
 		jdbcConfig.setDriverClassName(driverClassName);
 

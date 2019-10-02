@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.dataeconomy.migration.app.mysql.entity.TGTOtherProp;
-import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
-import com.dataeconomy.migration.app.mysql.repository.TGTOtherPropRepository;
-import com.dataeconomy.migration.app.util.Constants;
+import com.dataeconomy.migration.app.mysql.entity.DmuTgtOtherPropEntity;
+import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DmuTgtOtherPropRepository;
+import com.dataeconomy.migration.app.util.DmuConstants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,36 +23,36 @@ public class DemoScheduler {
 	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	@Autowired
-	private DMUHistoryMainRepository historyMainRepository;
+	private DmuHistoryMainRepository historyMainRepository;
 
 	@Autowired
 	private DemoRequestProcessor demorequestProcessor;
 
 	@Autowired
-	private TGTOtherPropRepository propOtherRepository;
+	private DmuTgtOtherPropRepository propOtherRepository;
 
 //	@Scheduled(cron = "* */2 * * * ?")
-	@Scheduled(fixedDelay = 180000)
+	//@Scheduled(fixedDelay = 180000)
 	public void schedulerConfig() {
 		try {
 			log.info(" => dmuScheduler Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
 
-			TGTOtherProp tgtOtherPropOpt = propOtherRepository.findById(1L)
-					.orElse(TGTOtherProp.builder().parallelUsrRqst(0L).parallelJobs(0L).build());
+			DmuTgtOtherPropEntity tgtOtherPropOpt = propOtherRepository.findById(1L)
+					.orElse(DmuTgtOtherPropEntity.builder().parallelUsrRqst(0L).parallelJobs(0L).build());
 
-			Long taskInProgressCount = historyMainRepository.getTaskDetailsCount(Constants.IN_PROGRESS);
+			Long taskInProgressCount = historyMainRepository.getTaskDetailsCount(DmuConstants.IN_PROGRESS);
 			log.info(" => dmuScheduler Task :: current tasks in progress count  Time - {} - count {} ",
 					dateTimeFormatter.format(LocalDateTime.now()), taskInProgressCount);
 
 			if (taskInProgressCount == 0L) {
-				Long tasksSubmittedCount = historyMainRepository.getTaskDetailsCount(Constants.SUBMITTED);
+				Long tasksSubmittedCount = historyMainRepository.getTaskDetailsCount(DmuConstants.SUBMITTED);
 				log.info(" => dmuScheduler Task ::tasksSubmittedCount from DMU_HISTORY_MAIN  {} ", tasksSubmittedCount);
 				if (tasksSubmittedCount != 0L) {
 					Optional.ofNullable(
-							historyMainRepository.findHistoryMainDetailsByStatusScheduler(Constants.SUBMITTED))
+							historyMainRepository.findHistoryMainDetailsByStatusScheduler(DmuConstants.SUBMITTED))
 							.ifPresent(historyList -> {
 //								historyList.parallelStream().forEach(historyEntity -> {
-								historyList.stream().forEach(historyEntity -> {
+								historyList.parallelStream().forEach(historyEntity -> {
 									log.info(
 											" dmuTaskScheduler => created new thead with name  :: {} :: {} to process request No :: {} at time => ",
 											Thread.currentThread().getName(),

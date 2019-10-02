@@ -9,63 +9,62 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
-import com.dataeconomy.migration.app.mysql.entity.DMUHistoryMain;
-import com.dataeconomy.migration.app.mysql.entity.TGTOtherProp;
-import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
-import com.dataeconomy.migration.app.mysql.repository.TGTOtherPropRepository;
-import com.dataeconomy.migration.app.scheduler.RequestProcessorClass;
-import com.dataeconomy.migration.app.util.Constants;
+import com.dataeconomy.migration.app.mysql.entity.DmuHistoryMainEntity;
+import com.dataeconomy.migration.app.mysql.entity.DmuTgtOtherPropEntity;
+import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DmuTgtOtherPropRepository;
+import com.dataeconomy.migration.app.scheduler.DmuRequestProcessorService;
+import com.dataeconomy.migration.app.util.DmuConstants;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
 //@Component
 @Slf4j
-public class DMUScheduler {
+public class DmuScheduler {
 
 	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	@Autowired
-	private TGTOtherPropRepository propOtherRepository;
+	private DmuTgtOtherPropRepository propOtherRepository;
 
 	@Autowired
-	private DMUHistoryMainRepository historyMainRepository;
+	private DmuHistoryMainRepository historyMainRepository;
 
 	@Autowired
-	private RequestProcessorClass requestProcessorClass;
+	private DmuRequestProcessorService requestProcessorClass;
 
 	@Autowired
 	private ExecutorService cachedThreadPool;
 
-	//@Scheduled(cron = "* */5 * * * ?")
+	// @Scheduled(cron = "* */5 * * * ?")
 	public void dmuScheduler() {
 		try {
 			log.info(" => dmuScheduler Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
-			TGTOtherProp tgtOtherPropOpt = propOtherRepository.findById(1L)
-					.orElse(TGTOtherProp.builder().parallelUsrRqst(0L).parallelJobs(0L).build());
+			DmuTgtOtherPropEntity tgtOtherPropOpt = propOtherRepository.findById(1L)
+					.orElse(DmuTgtOtherPropEntity.builder().parallelUsrRqst(0L).parallelJobs(0L).build());
 
-			Long taskInProgressCount = historyMainRepository.getTaskDetailsCount(Constants.IN_PROGRESS);
+			Long taskInProgressCount = historyMainRepository.getTaskDetailsCount(DmuConstants.IN_PROGRESS);
 
 			log.info(" => dmuScheduler Task :: taskInProgressCount - {}", taskInProgressCount);
 			log.info(" => dmuScheduler Task :: parallelUsersRequest - {}", tgtOtherPropOpt.getParallelUsrRqst());
 			log.info(" => dmuScheduler Task :: parallelJobsRequest - {}", tgtOtherPropOpt.getParallelJobs());
 
 			if (taskInProgressCount <= tgtOtherPropOpt.getParallelUsrRqst()) {
-				Long taskSubmittedCount = historyMainRepository.getTaskDetailsCount(Constants.SUBMITTED);
+				Long taskSubmittedCount = historyMainRepository.getTaskDetailsCount(DmuConstants.SUBMITTED);
 				log.info(" => dmuScheduler Task :: taskSubmittedCount - {}", taskSubmittedCount);
 				if (taskSubmittedCount != 0) {
 					if ((tgtOtherPropOpt.getParallelUsrRqst() - taskInProgressCount) > taskSubmittedCount) {
 						log.info(
 								" => parallel user requests greater than submitted count  - taskSubmittedCount :: {}  ",
 								taskSubmittedCount);
-						List<DMUHistoryMain> historyMainList = historyMainRepository
-								.findHistoryMainDetailsByStatus(Constants.STATUS_LIST);
-						if (historyMainList != null && historyMainList.size() > 0) {
+						List<DmuHistoryMainEntity> historyMainList = historyMainRepository
+								.findHistoryMainDetailsByStatus(DmuConstants.STATUS_LIST);
+						if (CollectionUtils.isNotEmpty(historyMainList)) {
 							ArrayList<Future<?>> futureList = Lists.newArrayList();
 							historyMainList.stream().limit(taskSubmittedCount).forEach(entity -> {
 								futureList.add(cachedThreadPool.submit(new Callable<Object>() {
@@ -91,8 +90,8 @@ public class DMUScheduler {
 					} else {
 						long count = (tgtOtherPropOpt.getParallelUsrRqst() - taskInProgressCount);
 						log.info(" => parallel user requests less than submitted count  - {} ", count);
-						List<DMUHistoryMain> historyMainList = historyMainRepository
-								.findHistoryMainDetailsByStatus(Constants.STATUS_LIST);
+						List<DmuHistoryMainEntity> historyMainList = historyMainRepository
+								.findHistoryMainDetailsByStatus(DmuConstants.STATUS_LIST);
 						if (historyMainList != null && historyMainList.size() > 0) {
 							ArrayList<Future<?>> futureList = Lists.newArrayList();
 							historyMainList.stream().limit(count).forEach(entity -> {

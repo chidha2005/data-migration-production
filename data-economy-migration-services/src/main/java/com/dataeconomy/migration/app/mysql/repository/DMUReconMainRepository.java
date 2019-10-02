@@ -6,13 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.dataeconomy.migration.app.mysql.entity.DMUReconMain;
-import com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection;
+import com.dataeconomy.migration.app.mysql.entity.DmuReconMainentity;
+import com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection;
 
 @Repository
-public interface DMUReconMainRepository extends JpaRepository<DMUReconMain, String> {
+public interface DmuReconMainRepository extends JpaRepository<DmuReconMainentity, String> {
 
-	@Query("select new com.dataeconomy.migration.app.mysql.entity.ReconAndRequestCountProjection(v.status , count(v) as cnt) from DMUReconMain v group by v.status")
-	public List<ReconAndRequestCountProjection> findReconMainStatusCount();
+	@Query("select new com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection(v.status , count(v) as cnt) from DmuReconMainentity v group by v.status")
+	public List<DmuReconAndRequestCountProjection> findReconMainStatusCount();
 
 }
