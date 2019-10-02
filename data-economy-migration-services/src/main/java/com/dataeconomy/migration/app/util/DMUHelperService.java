@@ -57,7 +57,7 @@ public class DMUHelperService {
 				Optional<TGTOtherProp> tgtOtherPropOpt = tgtOtherPropRepository.findById(1L);
 				if (tgtOtherPropOpt.isPresent()) {
 					TGTOtherProp tgtOtherPropOptEntity = tgtOtherPropOpt.get();
-					tgtOtherPropOptEntity.setParallelJobs(tgtOtherPropOptEntity.getParallelJobs());
+					tgtOtherPropOptEntity.setParallelJobs(connectionDto.getTgtOtherPropDto().getParallelJobs());
 					tgtOtherPropOptEntity.setParallelUsrRqst(connectionDto.getTgtOtherPropDto().getParallelUsrRqst());
 					tgtOtherPropOptEntity.setTempHiveDB(connectionDto.getTgtOtherPropDto().getTempHiveDB());
 					tgtOtherPropOptEntity.setTempHdfsDir(connectionDto.getTgtOtherPropDto().getTempHdfsDir());
@@ -66,6 +66,7 @@ public class DMUHelperService {
 					tgtOtherPropOptEntity.setHdfsEdgeNode(connectionDto.getTgtOtherPropDto().getHdfsEdgeNode());
 					tgtOtherPropOptEntity.setHdfsUserName(connectionDto.getTgtOtherPropDto().getHdfsUserName());
 					tgtOtherPropOptEntity.setHdfsPemLocation(connectionDto.getTgtOtherPropDto().getHdfsPemLocation());
+					tgtOtherPropOptEntity.setHadoopInstallDir(connectionDto.getTgtOtherPropDto().getHadoopInstallDir());
 					tgtOtherPropRepository.save(tgtOtherPropOptEntity);
 				}
 			}
