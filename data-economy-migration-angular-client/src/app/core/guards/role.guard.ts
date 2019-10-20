@@ -3,7 +3,7 @@ import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { AuthenticationService } from '../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
-export class AuthGuard implements CanActivate {
+export class RoleGuard implements CanActivate {
     constructor(
         private router: Router,
         private authenticationService: AuthenticationService
@@ -11,7 +11,10 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         const currentUser = this.authenticationService.currentUser();
-        if (currentUser) {
+        let allowedRoles = route["data"]["allowedRoles"];
+        console.log(allowedRoles);
+        console.log(currentUser);
+        if (currentUser && allowedRoles != undefined && allowedRoles.indexOf(currentUser["userRole"]) != -1) {
             return true;
         }
 

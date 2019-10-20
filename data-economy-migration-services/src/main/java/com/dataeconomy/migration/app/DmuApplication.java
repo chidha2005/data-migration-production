@@ -15,8 +15,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerA
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -55,20 +56,18 @@ public class DmuApplication {
 	}
 
 	@Bean
-	public JobLauncher jobLauncher(ThreadPoolTaskExecutor taskExecutor, JobRepository jobRepository) {
+	public JobLauncher jobLauncher(JobRepository jobRepository) throws Exception {
 		SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
-		jobLauncher.setTaskExecutor(taskExecutor);
+		jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
 		jobLauncher.setJobRepository(jobRepository);
+		jobLauncher.afterPropertiesSet();
 		return jobLauncher;
 	}
 
 	@Bean
-	public ThreadPoolTaskExecutor taskExecutor() {
-		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-		taskExecutor.setCorePoolSize(15);
-		taskExecutor.setMaxPoolSize(20);
-		taskExecutor.setQueueCapacity(30);
+	public TaskExecutor taskExecutor() {
+		SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor("DmmuScheduler-TaskExecutor");
+		taskExecutor.setConcurrencyLimit(30);
 		return taskExecutor;
 	}
-
 }

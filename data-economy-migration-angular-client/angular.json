@@ -27,12 +27,13 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/primeicons/primeicons.css",
+              "node_modules/primeicons/primeicons.css",
               "src/assets/css/primeng.css",
               "src/assets/css/theme.css",
               "src/assets/scss/bootstrap.scss",
               "src/assets/scss/app.scss",
               "src/assets/scss/icons.scss",
+              "node_modules/angular2-busy/build/style/busy.css",
               "src/assets/scss/styles.scss"
             ],
             "scripts": [

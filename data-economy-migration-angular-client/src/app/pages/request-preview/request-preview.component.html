@@ -6,14 +6,22 @@
                 <div class="card-body">
                     <div class="ui-g">
                         <div class="ui-g-12">
-                            <p-table selectionMode="multiple" [(selection)]="selectedRequestList" [paginator]="true"
-                                [rows]="10" [style]="{width:'100%'}" [scrollable]="true" [columns]="previewCols"
-                                [value]="previewList">
-                                <!-- <ng-template pTemplate="colgroup" let-columns>
-                                    <colgroup>
-                                        <col *ngFor="let col of columns" [style]="col.width">
-                                    </colgroup>
-                                </ng-template> -->
+                            <p-table #requestPreviewTable selectionMode="multiple" [(selection)]="selectedRequestList"
+                                [paginator]="true" [rows]="10" [style]="{width:'100%'}" [scrollable]="true"
+                                [columns]="previewCols" [value]="previewList"
+                                (onRowSelect)="onRowSelectionChange($event)"
+                                (onRowUnselect)="onRowSelectionChange($event)"
+                                (onHeaderCheckboxToggle)="onRowSelectionChange($event)">
+                                <ng-template pTemplate="caption">
+                                    <div class="ui-g">
+                                        <div class="ui-g-12 text-right">
+                                            <span class="mr-1">Search</span>
+                                            <input type="text" pInputText size="30" placeholder="Search"
+                                                (input)="requestPreviewTable.filterGlobal($event.target.value, 'contains')"
+                                                style="width:auto">
+                                        </div>
+                                    </div>
+                                </ng-template>
                                 <ng-template pTemplate="header" let-columns>
                                     <tr>
                                         <th *ngFor="let col of columns">
@@ -29,18 +37,18 @@
                                 <ng-template pTemplate="body" let-rowData let-columns="columns">
                                     <tr>
                                         <td *ngFor="let col of columns" [ngSwitch]="col.field">
-                                            <input *ngSwitchCase="'dbName'" type="text" pInputText
+                                            <input *ngSwitchCase="'schemaName'" type="text" pInputText
                                                 [(ngModel)]="rowData[col.field]" />
                                             <input *ngSwitchCase="'tableName'" type="text" pInputText
                                                 [(ngModel)]="rowData[col.field]" />
                                             <textarea [rows]="1" autoResize="autoResize"
                                                 *ngSwitchCase="'filterCondition'" pInputTextarea
                                                 [(ngModel)]="rowData[col.field]"></textarea>
-                                            <input *ngSwitchCase="'targetBucketName'" type="text" pInputText
+                                            <input *ngSwitchCase="'targetS3Bucket'" type="text" pInputText
                                                 [(ngModel)]="rowData[col.field]" />
                                             <p-checkbox *ngSwitchCase="'incrementalFlag'" binary="true"
                                                 [(ngModel)]="rowData[col.field]"></p-checkbox>
-                                            <input *ngSwitchCase="'incrementalColumn'" type="text" pInputText
+                                            <input *ngSwitchCase="'incrementalClmn'" type="text" pInputText
                                                 [(ngModel)]="rowData[col.field]" />
                                             <span *ngSwitchDefault>
                                                 {{rowData[col.field]}}
@@ -55,6 +63,8 @@
                         </div>
                     </div>
                     <div class="float-right">
+                        <button class="btn btn-secondary mr-2" type="button" (click)="onBackFunction()"><i
+                                class="fas fa-arrow-left mr-2"></i>Back</button>
                         <button class="btn btn-light mr-2" type="button" (click)="onCancelFunction()">Cancel</button>
                         <button class="btn  btn-info" type="button" (click)="onContinueFunction()">Continue</button>
                     </div>
@@ -64,3 +74,5 @@
     </div>
 
 </div>
+
+<p-confirmDialog appendTo="body" header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>

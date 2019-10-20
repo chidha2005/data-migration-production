@@ -9,18 +9,19 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @DynamicInsert(value = true)
+@DynamicUpdate(value = true)
 @Entity
 @Table(name = "DMU_HISTORY_MAIN")
 public class DmuHistoryMainEntity {
@@ -47,7 +48,6 @@ public class DmuHistoryMainEntity {
 	private LocalDateTime scriptGenCmpltTime;
 
 	@Column(name = "EXCTN_CMPLT_TIME", nullable = true)
-	@CreationTimestamp
 	private LocalDateTime exctnCmpltTime;
 
 	@Column(name = "TKNZTN_ENABLED", length = 1, nullable = true)

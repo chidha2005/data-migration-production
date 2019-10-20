@@ -72,7 +72,7 @@ public class DmuUsersService {
 		if (dmList != null && dmList.size() > 0) {
 			throw new Exception("User Already Exist!");
 		}
-		userDto.setCreatedBy(userDto.getUserName());
+		userDto.setCreatedBy("Admin");
 		userDto.setCreatedDate(LocalDateTime.now());
 
 		try {
@@ -120,10 +120,10 @@ public class DmuUsersService {
 			if (dmuUsersOpt.isPresent()) {
 				DmuUsersEntity dmuUsers = dmuUsersOpt.get();
 				dmuUsers.setEmailid(userDto.getEmailid());
-				dmuUsers.setPassword(userDto.getPassword());
+				//dmuUsers.setPassword(dmuUsersOpt.get(0).get );
 				dmuUsers.setUserRole(userDto.getUserRole());
 				dmuUsers.setId(userDto.getId());
-				dmuUsers.setUpdatedBy(userDto.getUserName());
+				dmuUsers.setUpdatedBy("Admin");
 				dmuUsers.setUpdatedDate(LocalDateTime.now());
 				userRepository.save(dmuUsers);
 				return true;

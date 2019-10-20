@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
@@ -22,15 +24,20 @@ public class DmuSchedulerJdbcWriter implements ItemWriter<DmuHistoryDetailEntity
 	@Override
 	public void write(List<? extends DmuHistoryDetailEntity> items) throws Exception {
 		Optional.ofNullable(items).orElse(new ArrayList<>()).stream().forEach(item -> {
-			log.info(" => sr No " + item.getDmuHIstoryDetailPK().getSrNo());
+			log.info(" => DmuSchedulerJdbcWriter =>  sr No " + item.getDmuHIstoryDetailPK().getSrNo());
 			stepExecution.getJobExecution().getExecutionContext().put("requestNo",
 					item.getDmuHIstoryDetailPK().getRequestNo());
 		});
 
 	}
 
+	@AfterStep
+	public synchronized ExitStatus afterStep(StepExecution stepExecution) {
+		return null;
+	}
+
 	@BeforeStep
-	public void saveStepExecution(StepExecution stepExecution) {
+	public synchronized void saveStepExecution(StepExecution stepExecution) {
 		this.stepExecution = stepExecution;
 	}
 }

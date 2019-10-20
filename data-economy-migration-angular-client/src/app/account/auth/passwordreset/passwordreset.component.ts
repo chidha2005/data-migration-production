@@ -1,6 +1,8 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NotificationService } from 'src/app/core/services/notification.service';
+import { AppService } from 'src/app/core/services/app.service';
 
 @Component({
   selector: 'app-passwordreset',
@@ -15,12 +17,14 @@ export class PasswordresetComponent implements OnInit, AfterViewInit {
   success = '';
   loading = false;
 
-  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router) { }
+  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router,
+    private appService: AppService, private notificationService: NotificationService) { }
 
   ngOnInit() {
 
     this.resetForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      userName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
@@ -36,7 +40,6 @@ export class PasswordresetComponent implements OnInit, AfterViewInit {
    * On submit form
    */
   onSubmit() {
-    this.success = '';
     this.submitted = true;
 
     // stop here if form is invalid
@@ -45,11 +48,22 @@ export class PasswordresetComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
-
-    console.log(this.resetForm.value);
-    setTimeout(() => {
-      this.loading = false;
-      this.success = 'We have sent you an email containing a link to reset your password';
-    }, 1000);
+    this.appService.forgotPassword(this.f.userName.value, this.f.email.value)
+      .subscribe(
+        res => {
+          if (res) {
+            this.submitted = false;
+            this.resetForm.reset();
+            this.notificationService.showSuccess('Password sent to the user email successfully');
+            this.router.navigate(['/app/login'])
+          }
+          else {
+            this.notificationService.showError('Error while processing the request');
+          }
+        },
+        error => {
+          this.notificationService.showError(error || 'Error while processing the request');
+          this.loading = false;
+        });
   }
 }

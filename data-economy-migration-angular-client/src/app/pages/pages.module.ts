@@ -16,11 +16,6 @@ import { UIModule } from '../shared/ui/ui.module';
 
 import {
   NgbDropdownModule,
-  NgbTabsetModule,
-  NgbAccordionModule,
-  NgbCollapseModule,
-  NgbModalModule,
-  NgbProgressbarModule,
   NgbAlertModule,
   NgbToastModule,
   NgbPopoverModule
@@ -41,6 +36,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
+import { KeyFilterModule } from 'primeng/keyfilter';
+
 import { CookieService } from '../core/services/cookie.service';
 import { RequestPreviewComponent } from './request-preview/request-preview.component';
 import { BasketComponent } from './basket/basket.component';
@@ -65,11 +62,6 @@ import { ChangePasswordComponent } from './change-password/change-password.compo
     PagesRoutingModule,
     UIModule,
     NgbDropdownModule,
-    NgbTabsetModule,
-    NgbAccordionModule,
-    NgbCollapseModule,
-    NgbModalModule,
-    NgbProgressbarModule,
     NgbAlertModule,
     NgbToastModule,
     NgbPopoverModule,
@@ -85,7 +77,8 @@ import { ChangePasswordComponent } from './change-password/change-password.compo
     TabViewModule,
     DropdownModule,
     FileUploadModule,
-    InputTextareaModule
+    InputTextareaModule,
+    KeyFilterModule
   ],
   providers: [
     ConfirmationService,

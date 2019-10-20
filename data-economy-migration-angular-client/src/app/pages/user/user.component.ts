@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { AppService } from 'src/app/core/services/app.service';
 import { NotificationService } from 'src/app/core/services/notification.service';
-
+import { Router } from '@angular/router';
+import { AuthenticationService } from 'src/app/core/services/auth.service';
 enum USER_ACTION_TYPE {
     CREATE,
     UPDATE
@@ -29,13 +30,15 @@ export class UserComponent implements OnInit {
         id: null,
         userName: "",
         emailid: "",
-        userRole: ""
+        userRole: "Admin"
     };
 
     constructor(
         private confirmationService: ConfirmationService,
         private appService: AppService,
-        private notificationService: NotificationService
+        private router: Router,
+        private notificationService: NotificationService,
+        private authenticationService: AuthenticationService
     ) { }
 
     ngOnInit() {
@@ -65,7 +68,7 @@ export class UserComponent implements OnInit {
             id: null,
             userName: "",
             emailid: "",
-            userRole: ""
+            userRole: "Admin"
         };
     }
 
@@ -102,10 +105,20 @@ export class UserComponent implements OnInit {
             },
             (error) => {
                 console.log(error);
-                this.notificationService.showError(error.message || "Error while deleting user");
+                this.notificationService.showError(error ||  "Error while deleting user");
             });
     }
-
+    resetPassword(selectedUser: any) {
+        this.confirmationService.confirm({
+            message: 'Are you sure want to reset password for selected user?',
+            accept: () => {
+                let selectedUserId= selectedUser.id;
+                this.router.navigate(['/app/settings/change-password'],{ queryParams: { selectedUserId: selectedUserId} });
+    
+            }
+        });
+      }
+    
     validateUserModel(action: USER_ACTION_TYPE) {
         if (action == USER_ACTION_TYPE.CREATE) {
             if (this.userModel.userName.trim().length < 1) {
@@ -133,7 +146,7 @@ export class UserComponent implements OnInit {
                 },
                 (error) => {
                     this.isAdd = true;
-                    this.notificationService.showError("Error while creating user");
+                    this.notificationService.showError(error ||  "Error while creating user");
                 });
         }
 
@@ -149,7 +162,7 @@ export class UserComponent implements OnInit {
                 },
                 (error) => {
                     this.isUpdate = true;
-                    this.notificationService.showError("Error while updating user information");
+                    this.notificationService.showError(error ||  "Error while updating user information");
                 });
         }
     }

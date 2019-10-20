@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { LoaderService } from './core/services/loader.service';
+import { AppService } from './core/services/app.service';
 
 @Component({
   selector: 'app',
@@ -12,7 +13,8 @@ export class AppComponent implements OnInit {
   loadingMessage: String = "";
 
   constructor(
-    private loaderService: LoaderService
+    private loaderService: LoaderService,
+    private appService: AppService
   ) { }
 
   ngOnInit() {

@@ -36,12 +36,19 @@ public class DmuHistoryDetailsService {
 		log.info(" HistoryDetailService :: getAllHistoryDetailsByReq {} ",
 				Objects.toString(requestNumber, "Invalid requestNumber"));
 		try {
-			List<DmuHistoryDetailEntity> dmuHistoryDetailListOpt = historyDetailRepository
-					.findHistoryDetailsByRequestNumber(requestNumber);
+			List<DmuHistoryDetailEntity> dmuHistoryDetailListOpt = historyDetailRepository.findHistoryDetailsByRequestNumber(requestNumber);
 			log.info(" HistoryDetailService :: getAllHistoryDetailsByReq dmuHistoryDetailListOpt :: {} ",
 					Objects.toString(dmuHistoryDetailListOpt, "Empty resultset"));
 			return dmuHistoryDetailListOpt.stream()
-					.map(dmuHistoryDetailEntity -> mapper.dmuHistoryDetailEntityToHistoryDTO(dmuHistoryDetailEntity))
+					.map(dmuHistoryDetailEntity -> DmuHistoryDetailsDTO.builder()
+							.srNo(dmuHistoryDetailEntity.getDmuHIstoryDetailPK().getSrNo())
+							.schemaName(dmuHistoryDetailEntity.getSchemaName())
+							.tableName(dmuHistoryDetailEntity.getTableName())
+							.filterCondition(dmuHistoryDetailEntity.getFilterCondition())
+							.targetS3Bucket(dmuHistoryDetailEntity.getTargetS3Bucket())
+							.incrementalFlag(dmuHistoryDetailEntity.getIncrementalFlag())
+							.incrementalClmn(dmuHistoryDetailEntity.getIncrementalClmn())
+							.status(dmuHistoryDetailEntity.getStatus()).build())
 					.collect(Collectors.toList());
 		} catch (Exception exception) {
 			log.info(" Exception occured at HistoryDetailService :: getAllHistoryDetailsByReq {} ",
@@ -58,11 +65,12 @@ public class DmuHistoryDetailsService {
 			List<DmuHistoryDetailEntity> detailsList = historyDetailRepository.findAll();
 			return Optional.ofNullable(detailsList).orElse(new ArrayList<>()).stream()
 					.map(dmuHistoryDetailObj -> DmuHistoryDetailsDTO.builder()
+							.srNo(dmuHistoryDetailObj.getDmuHIstoryDetailPK().getSrNo())
 							.schemaName(dmuHistoryDetailObj.getSchemaName())
 							.tableName(dmuHistoryDetailObj.getTableName())
 							.filterCondition(dmuHistoryDetailObj.getFilterCondition())
 							.targetS3Bucket(dmuHistoryDetailObj.getTargetS3Bucket())
-							.incrementalClmn(dmuHistoryDetailObj.getIncrementalFlag())
+							.incrementalFlag(dmuHistoryDetailObj.getIncrementalFlag())
 							.incrementalClmn(dmuHistoryDetailObj.getIncrementalClmn())
 							.status(dmuHistoryDetailObj.getStatus()).build())
 					.collect(Collectors.toList());

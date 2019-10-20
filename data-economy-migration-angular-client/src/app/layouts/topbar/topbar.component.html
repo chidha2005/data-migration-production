@@ -14,7 +14,7 @@
         </a>
       </li>
       <li class="dropdown notification-list">
-        <a routerLink="/app/basket" class="nav-link dropdown-toggle  waves-effect waves-light"
+        <a (click)="openBasketDetails()" class="nav-link dropdown-toggle  waves-effect waves-light"
           href="javascript: void(0);" role="button" aria-haspopup="false" aria-expanded="false">
           <i class="fa fa-shopping-basket noti-icon"></i>
           <span class="badge badge-danger rounded-circle noti-icon-badge" *ngIf="basketCount>0">{{basketCount}}</span>
@@ -28,7 +28,8 @@
           <i class="mdi mdi-chevron-down"></i>
         </a>
         <div class="dropdown-menu" ngbDropdownMenu aria-labelledby="extraMenu">
-          <a routerLink="/app/settings/users" routerLinkActive="active" class="dropdown-item">
+          <a routerLink="/app/settings/users" routerLinkActive="active" *ngIf="currentUser['userRole']=='Admin'"
+            class="dropdown-item">
             <i class="fas fa-users-cog mr-1"></i>
             <span>USERS</span>
           </a>
@@ -43,7 +44,7 @@
           id="profileDropdown" href="javascript: void(0);" role="button" aria-haspopup="false" aria-expanded="false">
           <i class="fas fa-user-circle fa-2x" style="vertical-align: middle"></i>
           <span class="pro-user-name ml-1">
-            Admin <i class="mdi mdi-chevron-down"></i>
+            {{currentUser["userName"]}} <i class="mdi mdi-chevron-down"></i>
           </span>
         </a>
         <div class="dropdown-menu dropdown-menu-right profile-dropdown" aria-labelledby="profileDropdown"

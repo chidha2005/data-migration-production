@@ -13,11 +13,6 @@ import { AppRoutingModule } from './app-routing.module';
 
 import {
   NgbDropdownModule,
-  NgbTabsetModule,
-  NgbAccordionModule,
-  NgbCollapseModule,
-  NgbModalModule,
-  NgbProgressbarModule,
   NgbAlertModule,
   NgbToastModule,
   NgbPopoverModule
@@ -44,11 +39,6 @@ import { MessageService } from 'primeng/api';
     UIModule,
     AppRoutingModule,
     NgbDropdownModule,
-    NgbTabsetModule,
-    NgbAccordionModule,
-    NgbCollapseModule,
-    NgbModalModule,
-    NgbProgressbarModule,
     NgbAlertModule,
     NgbToastModule,
     NgbPopoverModule,

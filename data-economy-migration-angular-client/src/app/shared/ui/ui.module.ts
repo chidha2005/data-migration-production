@@ -10,6 +10,9 @@ import { SlimscrollDirective } from './slimscroll.directive';
 import { CountToDirective } from './count-to.directive';
 import { PagetitleComponent } from './pagetitle/pagetitle.component';
 import { PortletComponent } from './portlet/portlet.component';
+import { BlockCopyPasteDirective } from './block-copy-paste.directive';
+import { RestrictInputDirective } from './restrictInput.directive';
+import { TrimValueAccessor } from './trim-value-accessor.directive';
 
 @NgModule({
   // tslint:disable-next-line: max-line-length
@@ -17,7 +20,10 @@ import { PortletComponent } from './portlet/portlet.component';
     SlimscrollDirective,
     CountToDirective,
     PagetitleComponent,
-    PortletComponent
+    PortletComponent,
+    TrimValueAccessor,
+    RestrictInputDirective,
+    BlockCopyPasteDirective
   ],
   imports: [
     CommonModule,
@@ -34,6 +40,10 @@ import { PortletComponent } from './portlet/portlet.component';
     SlimscrollDirective,
     CountToDirective,
     PagetitleComponent,
-    PortletComponent]
+    PortletComponent,
+    TrimValueAccessor,
+    RestrictInputDirective,
+    BlockCopyPasteDirective
+  ]
 })
 export class UIModule { }

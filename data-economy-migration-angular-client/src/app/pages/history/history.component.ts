@@ -2,6 +2,9 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import 'rxjs/add/operator/filter';
 import { Table } from 'primeng/table';
+import { AppService } from 'src/app/core/services/app.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
+import { AuthenticationService } from 'src/app/core/services/auth.service';
 
 @Component({
     selector: 'app-history',
@@ -15,9 +18,10 @@ export class HistoryComponent implements OnInit, AfterViewInit {
     breadCrumbItems: Array<{}>;
 
     // Table data
-    masterList: any[] = [];
-    masterCols: any[];
-    detailCols: any[];
+    masterList: any = [];
+    detailList: any = [];
+    masterCols: any;
+    detailCols: any;
 
     showMaster: boolean = true;
     showDetail: boolean = false;
@@ -26,15 +30,24 @@ export class HistoryComponent implements OnInit, AfterViewInit {
 
     filterParams: any = {};
 
+    isTokenizationEnabled: boolean = false;
+
     @ViewChild("masterTable", { static: false }) masterTable: Table;
 
-    constructor(private route: ActivatedRoute) { }
+    constructor(
+        private route: ActivatedRoute,
+        private appService: AppService,
+        private notificationService: NotificationService,
+        private authenticationService: AuthenticationService
+    ) { }
 
     ngAfterViewInit() {
-        this.masterTable.filter(this.filterParams.status, "status", 'startsWith');
+        // this.masterTable.filter(this.filterParams.status, "status", 'startsWith');
+        // this.masterTable.filter(this.filterParams.requestType, "requestType", 'startsWith');
     }
 
     ngOnInit() {
+        this.isTokenizationEnabled = this.authenticationService.isTokenizationEnabled();
         // tslint:disable-next-line: max-line-length
         this.breadCrumbItems = [{ label: 'Home', path: '/app/home' }, { label: 'History', active: true }];
 
@@ -43,26 +56,40 @@ export class HistoryComponent implements OnInit, AfterViewInit {
          */
         this._fetchData();
 
-        this.masterCols = [
-            { field: 'requestNo', header: 'Request No' },
-            { field: 'requestedBy', header: 'Requested By' },
-            { field: 'requestedTime', header: 'Requested Time' },
-            { field: 'tokenizationFlag', header: 'Tokenization Enabled' },
-            { field: 'status', header: 'Recon Status' },
-            { field: 'requestType', header: 'Request Type' },
-            { field: 'scriptGenCompletedTime', header: 'Script Generation Completed Time' },
-            { field: 'executionCompletedTime', header: 'Execution Completed Time' }
-        ];
+        if (this.isTokenizationEnabled) {
+            this.masterCols = [
+                { field: 'requestNo', header: 'Lable Name' },
+                { field: 'userId', header: 'Requested By' },
+                { field: 'requestedTime', header: 'Requested Time' },
+                { field: 'tknztnEnabled', header: 'Tokenization Enabled' },
+                { field: 'status', header: 'Status' },
+                { field: 'requestType', header: 'Request Type' },
+                // { field: 'scriptGenCmpltTime', header: 'Script Generation Completed Time' },
+                { field: 'exctnCmpltTime', header: 'Execution Completed Time' }
+            ];
+        }
+        else {
+            this.masterCols = [
+                { field: 'requestNo', header: 'Lable Name' },
+                { field: 'userId', header: 'Requested By' },
+                { field: 'requestedTime', header: 'Requested Time' },
+                { field: 'status', header: 'Status' },
+                { field: 'requestType', header: 'Request Type' },
+                // { field: 'scriptGenCmpltTime', header: 'Script Generation Completed Time' },
+                { field: 'exctnCmpltTime', header: 'Execution Completed Time' }
+            ];
+
+        }
 
         this.detailCols = [
-            { field: 'sno', header: 'Sr.No' },
-            { field: 'dbName', header: 'DB Name' },
+            { field: 'srNo', header: 'Sr.No' },
+            { field: 'schemaName', header: 'DB Name' },
             { field: 'tableName', header: 'Table Name' },
             { field: 'filterCondition', header: 'Filter Condition' },
-            { field: 'targetBucketName', header: 'Target Bucket Name' },
+            { field: 'targetS3Bucket', header: 'Target Bucket Name' },
             { field: 'incrementalFlag', header: 'Incremental Flag' },
-            { field: 'incrementalColumn', header: 'Incremental Column' },
-            { field: 'requestStatus', header: 'Request Status' }
+            { field: 'incrementalClmn', header: 'Incremental Column' },
+            { field: 'status', header: 'Request Status' }
         ];
 
         for (const key in this.masterCols) {
@@ -73,136 +100,33 @@ export class HistoryComponent implements OnInit, AfterViewInit {
             .filter(params => params.status)
             .subscribe(params => {
                 this.filterParams.status = params["status"] || "";
+                this.filterParams.requestType = params["requestType"] || "";
             });
 
     }
+
+    // clearMasterTableFilter() {
+    //     for (const key in this.masterCols) {
+    //         this.filterParams[key] = "";
+    //     }
+    //     this.masterTable.filter(this.filterParams.status, "status", 'startsWith');
+    //     this.masterTable.filter(this.filterParams.requestType, "requestType", 'startsWith');
+    // }
 
     /**
      * fetches the table value
      */
     _fetchData() {
-        this.masterList = [
-            {
-                requestNo: '1000',
-                requestedBy: 'John Doe',
-                requestedTime: '12/08/2019 16:00 EST',
-                tokenizationFlag: true,
-                status: 'Completed',
-                requestType: 'HDFS to S3',
-                scriptGenCompletedTime: '12/08/2019 16:10 EST',
-                executionCompletedTime: '10 Min',
-                details: [{
-                    sno: '1',
-                    dbName: 'DB1',
-                    tableName: "Table1",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Completed'
-                },
-                {
-                    sno: '2',
-                    dbName: 'DB1',
-                    tableName: "Table2",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'In Progress'
-                },
-                {
-                    sno: '3',
-                    dbName: 'DB1',
-                    tableName: "Table3",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Error'
-                }]
+        this.masterList = [];
+        this.appService.getHistoryMainList().subscribe(
+            (res: any) => {
+                this.masterList = res;
+                this.masterTable.filter(this.filterParams.status, "status", 'startsWith');
+                this.masterTable.filter(this.filterParams.requestType, "requestType", 'startsWith');
             },
-            {
-                requestNo: '1001',
-                requestedBy: 'John Doe',
-                requestedTime: '12/08/2019 16:00 EST',
-                tokenizationFlag: true,
-                status: 'In Progress',
-                requestType: 'HDFS to S3',
-                scriptGenCompletedTime: '12/08/2019 16:10 EST',
-                executionCompletedTime: '10 Min',
-                details: [{
-                    sno: '1',
-                    dbName: 'DB1',
-                    tableName: "Table1",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Completed'
-                },
-                {
-                    sno: '2',
-                    dbName: 'DB1',
-                    tableName: "Table2",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'In Progress'
-                },
-                {
-                    sno: '3',
-                    dbName: 'DB1',
-                    tableName: "Table3",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Error'
-                }]
-            },
-            {
-                requestNo: '1002',
-                requestedBy: 'John Doe',
-                requestedTime: '12/08/2019 16:00 EST',
-                tokenizationFlag: true,
-                status: 'Error',
-                requestType: 'HDFS to S3',
-                scriptGenCompletedTime: '12/08/2019 16:10 EST',
-                executionCompletedTime: '10 Min',
-                details: [{
-                    sno: '1',
-                    dbName: 'DB1',
-                    tableName: "Table1",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Completed'
-                },
-                {
-                    sno: '2',
-                    dbName: 'DB1',
-                    tableName: "Table2",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'In Progress'
-                },
-                {
-                    sno: '3',
-                    dbName: 'DB1',
-                    tableName: "Table3",
-                    filterCondition: 'Sample Condition',
-                    targetBucketName: 'Bucket1',
-                    incrementalFlag: true,
-                    incrementalColumn: false,
-                    requestStatus: 'Error'
-                }]
-            }
-        ];
+            (error) => {
+                this.notificationService.showError(error || "System Temporarly unavailable");
+            });
     }
 
     downloadTokenizationDetails() {
@@ -210,26 +134,24 @@ export class HistoryComponent implements OnInit, AfterViewInit {
     }
 
     openReconDetails(selectedItem: any) {
+        this.detailList = [];
         this.selectedRec = selectedItem;
-        this.showMaster = false;
-        this.showDetail = true;
+        this.appService.getHistoryDetailsById(this.selectedRec.requestNo).subscribe(
+            (res: any) => {
+                this.detailList = res;
+                this.showMaster = false;
+                this.showDetail = true;
+            },
+            (error) => {
+                this.notificationService.showError(error || "System Temporarly unavailable");
+            });
     }
 
     cancelDetails() {
         this.selectedRec = null;
         this.showMaster = true;
         this.showDetail = false;
-    }
-
-    onDetailsSubmitFunction() {
-
-    }
-
-    onSubmitFunction() {
-
-    }
-
-    onCancelFunction() {
-
+        this.detailList = [];
+        this._fetchData();
     }
 }

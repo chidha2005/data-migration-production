@@ -1,5 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { AppService } from 'src/app/core/services/app.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
+
+// import * as Highcharts from 'highcharts';
+// require('highcharts/highcharts-3d.js')(Highcharts);
 
 @Component({
   selector: 'app-home',
@@ -9,6 +14,7 @@ import { Router } from '@angular/router';
 
 export class HomeComponent implements OnInit {
 
+
   // bread crumb items
   breadCrumbItems: Array<{}>;
 
@@ -17,10 +23,16 @@ export class HomeComponent implements OnInit {
   requestStatusChartConfig: any;
   reconStatusChartConfig: any;
 
-  constructor(private router: Router) { }
+  constructor(
+    private ngZone: NgZone,
+    private router: Router,
+    private appService: AppService,
+    private notificationService: NotificationService
+  ) { }
 
   ngOnInit() {
-    this.breadCrumbItems = [{ label: 'Home', active: true }];
+
+    let self = this;
 
     this.requestStatusChartConfig = {
       type: 'pie',
@@ -40,7 +52,7 @@ export class HomeComponent implements OnInit {
         }
       },
       height: 250,
-      piechartcolor: ['#4fc6e1', '#f7b84b', '#1abc9c', "#f1556c"],
+      piechartcolor: ['#f7b84b', '#4fc6e1', '#1abc9c', "#f1556c"],
       dataLabels: {
         enabled: false
       },
@@ -50,6 +62,9 @@ export class HomeComponent implements OnInit {
       tooltip: {
         x: {
           show: false
+        },
+        y: {
+          formatter: (value) => { return value + "%" },
         }
       },
       grid: {
@@ -63,10 +78,10 @@ export class HomeComponent implements OnInit {
       },
       events: {
         dataPointSelection: (event, chartContext, config) => {
-          this.contentClicked('request', event, chartContext, config);
+          self.contentClicked('request', event, chartContext, config);
         }
       },
-      labels: ["Not Started", "In Progress", "Complete", "Error"]
+      labels: ["In Progress", "Submitted", "Successful", "Failed"]
     };
 
     this.reconStatusChartConfig = {
@@ -87,7 +102,7 @@ export class HomeComponent implements OnInit {
         }
       },
       height: 250,
-      piechartcolor: ['#4fc6e1', '#f7b84b', '#1abc9c', "#f1556c"],
+      piechartcolor: ['#007bff', '#f7b84b', '#4fc6e1', '#1abc9c', "#f1556c"],
       dataLabels: {
         enabled: false
       },
@@ -97,6 +112,9 @@ export class HomeComponent implements OnInit {
       tooltip: {
         x: {
           show: false
+        },
+        y: {
+          formatter: (value) => { return value + "%" },
         }
       },
       grid: {
@@ -110,10 +128,10 @@ export class HomeComponent implements OnInit {
       },
       events: {
         dataPointSelection: (event, chartContext, config) => {
-          this.contentClicked('recon', event, chartContext, config);
+          self.contentClicked('recon', event, chartContext, config);
         }
       },
-      labels: ["Not Started", "In Progress", "Complete", "Error"]
+      labels: ["Not Started", "In Progress", "Submitted", "Successful", "Failed"]
     };
 
     this.fetchChartData();
@@ -124,17 +142,22 @@ export class HomeComponent implements OnInit {
    */
   contentRefresh() {
     console.log('Data refresh requested');
+    this.fetchChartData();
   }
 
   contentClicked(requestType, event, chartContext, config) {
     console.log(config);
     if (requestType == 'request') {
-      let status = this.chartData[0]["requestStatus"]["labels"][config.dataPointIndex]
-      this.router.navigate(['/app/history'], { queryParams: { status: status } });
+      let status = this.chartData[0]["requestStatus"]["labels"][config.dataPointIndex];
+      this.ngZone.run(() => {
+        this.router.navigate(['/app/history'], { queryParams: { status: status, requestType: 'HIVE TO S3' } });
+      });
     }
     else if (requestType == 'recon') {
-      let status = this.chartData[0]["reconStatus"]["labels"][config.dataPointIndex]
-      this.router.navigate(['/app/recon'], { queryParams: { status: status } });
+      let status = this.chartData[0]["reconStatus"]["labels"][config.dataPointIndex];
+      this.ngZone.run(() => {
+        this.router.navigate(['/app/recon'], { queryParams: { status: status, requestType: 'HIVE TO S3' } });
+      });
     }
   }
 
@@ -142,20 +165,31 @@ export class HomeComponent implements OnInit {
    * fetches the dashboard-2 data
    */
   private fetchChartData() {
-    let res = [
-      {
-        "requestStatus": [5, 30, 20, 10],
-        "reconStatus": [5, 30, 20, 5]
-      }
-    ];
+    this.appService.getHomeScreenData().subscribe(
+      (res) => {
+        this.chartData = [];
+        let requestPropList = ["In Progress", "Submitted", "Successful", "Failed"];
+        let reconPropList = ["Not Started", "In Progress", "Submitted", "Successful", "Failed"];
 
-    res.forEach(ele => {
-      let requestStatus = Object.assign({}, this.requestStatusChartConfig, { "series": ele["requestStatus"] });
-      let reconStatus = Object.assign({}, this.reconStatusChartConfig, { "series": ele["reconStatus"] });
-      this.chartData.push({
-        "requestStatus": requestStatus,
-        "reconStatus": reconStatus
+        let requestStatus = [];
+        let reconStatus = [];
+
+        requestPropList.forEach((prop) => {
+          requestStatus.push(Math.round(res["reconHistoryMainCount"].hasOwnProperty(prop) ? (res["reconHistoryMainCount"][prop] / res["reconHistoryMainTotalCount"]) * 100 : 0));
+        });
+
+        reconPropList.forEach((prop) => {
+          reconStatus.push(Math.round(res["reconMainCount"].hasOwnProperty(prop) ? (res["reconMainCount"][prop] / res["reconMainTotalCount"]) * 100 : 0));
+        });
+
+        this.chartData.push({
+          "requestStatus": Object.assign({}, this.requestStatusChartConfig, { "series": requestStatus }),
+          "reconStatus": Object.assign({}, this.reconStatusChartConfig, { "series": reconStatus })
+        });
+      },
+      (error) => {
+        console.log(error);
+        this.notificationService.showError(error || "Error while fetching the info");
       });
-    });
   };
 }

@@ -11,19 +11,21 @@ import { ConnectionComponent } from './connection/connection.component';
 import { RequestPreviewComponent } from './request-preview/request-preview.component';
 import { BasketComponent } from './basket/basket.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
+import { RoleGuard } from '../core/guards/role.guard';
+import { USER_ROLE } from '../core/constants/role.constants';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'request', component: RequestComponent },
-  { path: 'request/preview', component: RequestPreviewComponent },
-  { path: 'basket', component: BasketComponent },
-  { path: 'history', component: HistoryComponent },
-  { path: 'recon', component: ReconComponent },
-  { path: 'help', component: HelpComponent },
-  { path: 'settings/users', component: UserComponent },
-  { path: 'settings/connection', component: ConnectionComponent },
-  { path: 'settings/change-password', component: ChangePasswordComponent }
+  { path: '', redirectTo: 'home', pathMatch: 'full', data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'home', component: HomeComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'request', component: RequestComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'request/preview', component: RequestPreviewComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'basket', component: BasketComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'history', component: HistoryComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'recon', component: ReconComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'help', component: HelpComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN, USER_ROLE.NORMAL_USER] } },
+  { path: 'settings/users', component: UserComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN] }, canActivate: [RoleGuard] },
+  { path: 'settings/connection', component: ConnectionComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN], canActivate: [RoleGuard] } },
+  { path: 'settings/change-password', component: ChangePasswordComponent, data: { 'allowedRoles': [USER_ROLE.ADMIN] } }
 ];
 
 @NgModule({

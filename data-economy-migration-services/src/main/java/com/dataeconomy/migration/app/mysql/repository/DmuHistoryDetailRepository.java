@@ -20,6 +20,10 @@ public interface DmuHistoryDetailRepository extends JpaRepository<DmuHistoryDeta
 	@Query("SELECT detail from DmuHistoryDetailEntity detail where detail.dmuHIstoryDetailPK.requestNo = :requestNo")
 	List<DmuHistoryDetailEntity> findHistoryDetailsByRequestNumber(@Param("requestNo") String requestNo);
 
+	@Query("SELECT detail from DmuHistoryDetailEntity detail where detail.dmuHIstoryDetailPK.requestNo = :requestNo AND detail.status = 'Submitted' ")
+	List<DmuHistoryDetailEntity> findHistoryDetailsByRequestNumberByPageable(@Param("requestNo") String requestNo,
+			Pageable pageable);
+
 	@Query("SELECT detail from DmuHistoryDetailEntity detail where detail.dmuHIstoryDetailPK.requestNo = :requestNo AND detail.dmuHIstoryDetailPK.srNo = :srNo")
 	List<DmuHistoryDetailEntity> findHistoryDetailsByRequestNumberAndSrNo(@Param("requestNo") String requestNo,
 			@Param("srNo") Long srNo);

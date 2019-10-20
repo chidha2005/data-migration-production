@@ -35,11 +35,14 @@
                                         {{rowData[col.field]}}
                                     </td>
                                     <td>
-                                        <button class="btn btn-xs btn-info mr-2" (click)="showUpdateUser(rowData)">
+                                        <button class="btn btn-xs btn-info mr-2" (click)="showUpdateUser(rowData)" title="Click here to edit selected user">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="btn  btn-xs btn-danger" (click)="showDeleteUser(rowData)">
+                                        <button class="btn  btn-xs btn-danger mr-2" (click)="showDeleteUser(rowData)" title="Click here to delete selected user">
                                             <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <button class="btn  btn-xs btn-primary" (click)="resetPassword(rowData)" title="Click here to reset password for selected user">
+                                            <i class="fas fa-key"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -58,14 +61,14 @@
     </p-header>
     <div class="ui-g">
         <div class="col-lg-12">
-            <form>
+            <form autocomplete="off">
                 <div class="ui-g">
                     <div class="ui-g-4">
                         <label for="userName">UserName</label>
                     </div>
                     <div class="ui-g-8">
-                        <input type="text" [(ngModel)]="userModel.userName" name="userName" pInputText
-                            class="form-control" placeholder="Please Enter Username">
+                        <input autocomplete="off" type="text" [(ngModel)]="userModel.userName" name="userName"
+                            pInputText class="form-control" placeholder="Please Enter Username">
                     </div>
                 </div>
                 <div class="ui-g">
@@ -73,7 +76,7 @@
                         <label for="emailid">Email</label>
                     </div>
                     <div class="ui-g-8">
-                        <input type="email" name="emailid" pInputText [(ngModel)]="userModel.emailid"
+                        <input autocomplete="off" type="email" name="emailid" pInputText [(ngModel)]="userModel.emailid"
                             class="form-control" placeholder="Please Enter Email">
                     </div>
                 </div>
@@ -110,7 +113,7 @@
     </p-header>
     <div class="ui-g">
         <div class="col-lg-12">
-            <form>
+            <form autocomplete="off">
                 <div class="ui-g">
                     <div class="ui-g-4">
                         <label for="userName">UserName</label>
@@ -124,7 +127,7 @@
                         <label for="emailid">Email</label>
                     </div>
                     <div class="ui-g-8">
-                        <input pInputText [(ngModel)]="userModel.emailid" type="email" name="emailid"
+                        <input autocomplete="off" pInputText [(ngModel)]="userModel.emailid" type="email" name="emailid"
                             class="form-control" placeholder="Please Enter Email">
                     </div>
                 </div>
