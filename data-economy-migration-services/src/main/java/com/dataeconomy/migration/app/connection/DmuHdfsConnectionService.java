@@ -162,7 +162,7 @@ public class DmuHdfsConnectionService {
 
 	@Timed
 	public DataSource getValidDataSource(String dataSourceType) throws DataMigrationException {
-		log.error("called => HDFSConnectionService  :: getValidDataSource :: dataSourceType  {} ", dataSourceType);
+		log.info("called => HDFSConnectionService  :: getValidDataSource :: dataSourceType  {} ", dataSourceType);
 		try {
 			if (dataSourceMap.get(dataSourceType) != null) {
 				return dataSourceMap.get(dataSourceType);
