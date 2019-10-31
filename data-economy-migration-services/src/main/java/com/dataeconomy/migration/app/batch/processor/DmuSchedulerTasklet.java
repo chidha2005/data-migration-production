@@ -64,6 +64,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		try {
+
 			log.info(" ## DmuSchedulerTasklet => job parameters => requestNo {} ,  parallelJobs {} ", requestNo,
 					parallelJobs);
 			Optional.ofNullable(historyDetailRepository.findHistoryDetailsByRequestNumberByPageable(requestNo,

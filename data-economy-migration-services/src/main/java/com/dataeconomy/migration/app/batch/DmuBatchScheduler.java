@@ -22,6 +22,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dataeconomy.migration.app.batch.listener.DmuJobCompletionNotificationListener;
 import com.dataeconomy.migration.app.batch.listener.DmuStepExecutionNotificationListener;
@@ -68,6 +70,7 @@ public class DmuBatchScheduler {
 	DmuJobCompletionNotificationListener jobCompletionListener;
 
 	@Scheduled(fixedDelay = 120000)
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
 	public void performDataMigrationProcess() {
 		Long noOfParallelusers = 0L;
 		Long noOfParallelJobs = 0L;
