@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dataeconomy.migration.app.aop.Timed;
 import com.dataeconomy.migration.app.model.DmuHistoryDTO;
 import com.dataeconomy.migration.app.mysql.entity.DmuHistoryMainEntity;
-import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DmuHistoryMainService {
 
 	@Autowired
-	private DmuHistoryMainRepository historyMainRepository;
+	private DMUHistoryMainRepository historyMainRepository;
 
 	@Timed
 	@Transactional(readOnly = true)

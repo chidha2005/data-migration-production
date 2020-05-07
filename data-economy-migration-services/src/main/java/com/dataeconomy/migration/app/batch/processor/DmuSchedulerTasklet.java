@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,6 +31,7 @@ import com.dataeconomy.migration.app.mysql.entity.DmuHistoryDetailEntity;
 import com.dataeconomy.migration.app.mysql.repository.DmuHistoryDetailRepository;
 import com.dataeconomy.migration.app.util.DmuConstants;
 import com.dataeconomy.migration.app.util.DmuServiceHelper;
+import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,13 +64,12 @@ public class DmuSchedulerTasklet implements Tasklet {
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		try {
-
-			log.info(" ## DmuSchedulerTasklet => job parameters => requestNo {} ,  parallelJobs {} ", requestNo,
-					parallelJobs);
+			log.info(" ## DmuSchedulerTasklet => execute => job parameters => requestNo {} ,  parallelJobs {} ",
+					requestNo, parallelJobs);
 			Optional.ofNullable(historyDetailRepository.findHistoryDetailsByRequestNumberByPageable(requestNo,
 					PageRequest.of(0, Math.toIntExact(parallelJobs),
 							Sort.by(Sort.Direction.ASC, "dmuHIstoryDetailPK.srNo"))))
-					.orElse(new ArrayList<>()).parallelStream().forEach(dmuHistoryDetailEntity -> {
+					.orElse(Lists.newArrayList()).parallelStream().forEach(dmuHistoryDetailEntity -> {
 						chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().put(
 								DmuConstants.REQUEST_NO, dmuHistoryDetailEntity.getDmuHIstoryDetailPK().getRequestNo());
 						Thread.currentThread()
@@ -79,6 +78,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 								Thread.currentThread().getName(),
 								dmuHistoryDetailEntity.getDmuHIstoryDetailPK().getSrNo());
 						try {
+
 							updateStatus(dmuHistoryDetailEntity, DmuConstants.IN_PROGRESS);
 							if (StringUtils.isBlank(dmuHistoryDetailEntity.getFilterCondition())
 									&& StringUtils.equalsIgnoreCase(DmuConstants.NO,
@@ -104,13 +104,16 @@ public class DmuSchedulerTasklet implements Tasklet {
 							updateStatus(dmuHistoryDetailEntity, DmuConstants.FAILED);
 						}
 					});
-			return RepeatStatus.FINISHED;
 		} catch (NonSkippableReadException e) {
 			chunkContext.getStepContext().getStepExecution().getJobExecution().stop();
+			log.error("exception in tasklet.", e);
 			throw e;
 		} catch (Exception e) {
+			log.error("exception in tasklet.", e);
 			throw e;
 		}
+
+		return RepeatStatus.FINISHED;
 	}
 
 	@Timed
@@ -131,6 +134,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 			if (StringUtils.isBlank(locationHDFS.toString())) {
 				updateStatus(historyEntity, DmuConstants.FAILED);
 				return Optional.empty();
+
 			}
 			return Optional.ofNullable(
 					StringUtils.substring(locationHDFS.toString(), locationHDFS.toString().indexOf("LOCATION") + 8,
@@ -182,6 +186,10 @@ public class DmuSchedulerTasklet implements Tasklet {
 	}
 
 	@Timed
+	// DistCp => DistCP is an acronym for Distributed Copy in the context of Apache
+	// Hadoop.
+	// Hadoop distcp [options] src_url dest_url
+	// -m indicates how many maps are enabled
 	private void migrateDataToS3ForFilterCondition(DmuHistoryDetailEntity historyEntity) {
 		BasicSessionCredentials awsCredentials = awsConnectionService.getBasicSessionCredentials();
 		if (awsCredentials == null) {
@@ -189,7 +197,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 		} else {
 			String sftcpCommand = dmuServiceHelper.buildS3MigrationUrlForFilterCondition(historyEntity, awsCredentials);
 			StringBuilder sshBuilder = new StringBuilder();
-			sshBuilder.append("ssh -i ");
+			sshBuilder.append("ssh -i");
 			sshBuilder.append(" ");
 			sshBuilder.append(dmuServiceHelper.getProperty(DmuConstants.HDFS_PEM_LOCATION));
 			sshBuilder.append(" ");
@@ -201,6 +209,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 			} else {
 				sshBuilder.append(" ");
 			}
+			sshBuilder.append(";sudo -i;");
 			sshBuilder.append(sftcpCommand);
 			try {
 				executeSSHCommand(historyEntity, sshBuilder);
@@ -215,6 +224,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 	@Timed
 	private void executeSSHCommand(DmuHistoryDetailEntity historyEntity, StringBuilder sshBuilder)
 			throws IOException, InterruptedException {
+		log.info(" sshCommand {} ", sshBuilder.toString());
 		Process process = Runtime.getRuntime().exec(sshBuilder.toString());
 		try (InputStreamReader errorStream = new InputStreamReader(process.getErrorStream());
 				BufferedReader errorBuffer = new BufferedReader(errorStream);
@@ -231,6 +241,7 @@ public class DmuSchedulerTasklet implements Tasklet {
 			log.error(" ssh command error ");
 			updateStatus(historyEntity, DmuConstants.FAILED);
 		}
+
 	}
 
 	@Timed

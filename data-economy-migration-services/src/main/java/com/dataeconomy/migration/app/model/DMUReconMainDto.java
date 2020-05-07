@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DmuReconMainDTO {
+public class DMUReconMainDto {
 
 	private String requestNo;
 

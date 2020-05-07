@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.dataeconomy.migration.app.mysql.entity.DmuS3Entity;
 
 @Repository
-public interface DmuS3Repository extends JpaRepository<DmuS3Entity, Long> {
+public interface DMUS3Repository extends JpaRepository<DmuS3Entity, Long> {
 
 }

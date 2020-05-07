@@ -38,7 +38,7 @@ public class DmuConnectionValidateService {
 			if (hiveConnStringOpt.isPresent()) {
 				String hiveConnString = hiveConnStringOpt.get();
 				log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
-				if (!validateConnection(hiveConnString)) {
+ 				if (!validateConnection(hiveConnString)) {
 					throw new DataMigrationException("Invalid Hive Connection Details");
 				}
 				return true;
@@ -74,7 +74,7 @@ public class DmuConnectionValidateService {
 				throw new DataMigrationException("Invalid Connection Details for SPARK connection Validation ");
 			}
 		}
-		return false;
+		return false; 
 	}
 
 	private boolean validateConnection(String validateConnString) {

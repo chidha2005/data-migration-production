@@ -9,27 +9,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dataeconomy.migration.app.model.DmuReconMainDTO;
-import com.dataeconomy.migration.app.service.DmuReconMainService;
+import com.dataeconomy.migration.app.model.DMUReconMainDto;
+import com.dataeconomy.migration.app.service.DMUReconMainService;
 
 @RestController
 @RequestMapping("/datamigration/recon")
-public class DmuReconController {
+public class DMUReconController {
 
 	@Autowired
-	private DmuReconMainService dmuReconService;
+	private DMUReconMainService dmuReconService;
 
 	@GetMapping("/details/{requestNo}")
-	public DmuReconMainDTO getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
+	public DMUReconMainDto getReconDetailsBySearch(@PathVariable("requestNo") String requestNo) {
 		return dmuReconService.getReconDetailsBySearch(requestNo);
 	}
 
 	@GetMapping("/all")
-	public List<DmuReconMainDTO> getAllDatabases() {
+	public List<DMUReconMainDto> getAllDatabases() {
 		return dmuReconService.getDMUReconMainDetailsList();
 	}
 	@GetMapping("/byUserId")
-	public List<DmuReconMainDTO> getAllDatabasesByUserId(@RequestParam("userId") String userId) {
+	public List<DMUReconMainDto> getAllDatabasesByUserId(@RequestParam("userId") String userId) {
 		return dmuReconService.getAllDatabasesByUserId(userId);
 	}
 }

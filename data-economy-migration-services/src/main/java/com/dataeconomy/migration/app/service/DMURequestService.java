@@ -20,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dataeconomy.migration.app.aop.Timed;
 import com.dataeconomy.migration.app.connection.DmuHdfsConnectionService;
-import com.dataeconomy.migration.app.model.DmuBasketDTO;
+import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.model.DmuHistoryDTO;
 import com.dataeconomy.migration.app.mysql.entity.DmuHistoryMainEntity;
-import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
 import com.dataeconomy.migration.app.util.DmuConstants;
 import com.google.common.collect.Lists;
 
@@ -31,10 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class DmuRequestService {
+public class DMURequestService {
 
 	@Autowired
-	private DmuHistoryMainRepository dmuHistoryMainRepository;
+	private DMUHistoryMainRepository dmuHistoryMainRepository;
 
 	@Autowired
 	private DmuHdfsConnectionService hdfcConnectionService;
@@ -86,21 +86,21 @@ public class DmuRequestService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuBasketDTO> getAllTablesForGivenDatabase(String databaseName) {
+	public List<DMUBasketDto> getAllTablesForGivenDatabase(String databaseName) {
 		log.info(" invoked =>  RequestService :: getAllTablesForGivenDatabase  :: {} ", databaseName);
 		try {
 			DataSource dataSource = hdfcConnectionService.getValidDataSource(DmuConstants.REGULAR);
 			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 			jdbcTemplate.execute("USE " + databaseName);
-			return jdbcTemplate.query(" SHOW TABLES", new ResultSetExtractor<List<DmuBasketDTO>>() {
+			return jdbcTemplate.query(" SHOW TABLES", new ResultSetExtractor<List<DMUBasketDto>>() {
 
 				@Override
-				public List<DmuBasketDTO> extractData(ResultSet rs) throws SQLException {
-					List<DmuBasketDTO> dmuBasketDtoList = Lists.newArrayList();
+				public List<DMUBasketDto> extractData(ResultSet rs) throws SQLException {
+					List<DMUBasketDto> dmuBasketDtoList = Lists.newArrayList();
 					Long value = 0L;
 					while (rs.next()) {
 						dmuBasketDtoList.add(
-								DmuBasketDTO.builder().srNo(++value).schemaName(databaseName).tableName(rs.getString(1))
+								DMUBasketDto.builder().srNo(++value).schemaName(databaseName).tableName(rs.getString(1))
 										.filterCondition(null).targetS3Bucket(databaseName + "/" + rs.getString(1))
 										.incrementalFlag(DmuConstants.NO).incrementalClmn(null).build());
 					}

@@ -15,30 +15,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dataeconomy.migration.app.exception.DataMigrationException;
-import com.dataeconomy.migration.app.model.DmuBasketDTO;
-import com.dataeconomy.migration.app.model.DmuHistoryDTO;
-import com.dataeconomy.migration.app.service.DmuBasketService;
+import com.dataeconomy.migration.app.model.DMUBasketDto;
+import com.dataeconomy.migration.app.service.DMUBasketService;
 
 @RestController
 @RequestMapping("/datamigration/basket")
-public class DmuBasketController {
+public class DMUBasketController {
 
 	@Autowired
-	DmuBasketService dmuBasketService;
+	DMUBasketService dmuBasketService;
 
 	@GetMapping("/all")
-	public List<DmuBasketDTO> getAllBasketDetails() {
+	public List<DMUBasketDto> getAllBasketDetails() {
 		return dmuBasketService.getAllBasketDetails();
 	}
 
 	@PostMapping("/save")
-	public boolean saveBasketDetailsTemp(@RequestBody List<DmuBasketDTO> dmuBasketDtoList,
+	public boolean saveBasketDetailsTemp(@RequestBody List<DMUBasketDto> dmuBasketDtoList,
 			@RequestHeader("userId") String userId) throws DataMigrationException {
 		return dmuBasketService.saveBasketDetails(dmuBasketDtoList, userId);
 	}
 
 	@PostMapping("/save/purge")
-	public boolean saveBasketDetailsAndPurge(@RequestBody List<DmuBasketDTO> dmuBasketDtoList,
+	public boolean saveBasketDetailsAndPurge(@RequestBody List<DMUBasketDto> dmuBasketDtoList,
 			@RequestHeader("userId") String userId) throws DataMigrationException {
 		return dmuBasketService.saveBasketDetailsAndPurge(dmuBasketDtoList, userId);
 	}
@@ -49,7 +48,7 @@ public class DmuBasketController {
 	}
 
 	@GetMapping("/all/{userId}")
-	public List<DmuBasketDTO> saveBasketDetails(@PathVariable("userId") String userId) {
+	public List<DMUBasketDto> saveBasketDetails(@PathVariable("userId") String userId) {
 		return dmuBasketService.getBasketDetailsByUserId(userId);
 	}
 
@@ -64,12 +63,13 @@ public class DmuBasketController {
 	}
 
 	@GetMapping("/search")
-	public List<DmuBasketDTO> getBasketDetailsBySearchParam(
+	public List<DMUBasketDto> getBasketDetailsBySearchParam(
 			@RequestParam(value = "searchParam", required = true) String searchParam) throws DataMigrationException {
 		return dmuBasketService.getBasketDetailsBySearchParam(searchParam);
 	}
+
 	@GetMapping("/getBasketDetailsByUserId")
-	public List<DmuBasketDTO> getBasketDetailsByUserId(@RequestParam("userId") String userId) {
+	public List<DMUBasketDto> getBasketDetailsByUserId(@RequestParam("userId") String userId) {
 		return dmuBasketService.getBasketDetailsByUserId(userId);
 	}
 }

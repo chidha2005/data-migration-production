@@ -1,3 +1,18 @@
+#info:
+    #app:
+        #description: DataMigration Util
+        #name: DataMigration Util
+        #version: 1.0.0
+#management:
+    #endpoints:
+       # jmx:
+            #exposure:
+               # exclude: health, metrics
+               # include: '*'
+        #web:
+            #exposure:
+              #  exclude: health, metrics
+               # include: '*'
 hive:
     connection:
         kerberos:
@@ -7,16 +22,16 @@ hive:
                 url: jdbc:hive2://{0}:{1}/dbname;AuthMech=3;UID={2}@{3};PWD={4}
             url: jdbc:hive2://{0}:{1}/dbname;AuthMech=3;UID={2};PWD={3}
         unsecured:
-            url: jdbc:hive2://{0}:{1}/dbname
-        url: jdbc:hive2://{0}:{1}
+            url: jdbc:hive2://{0}:{1}/dbname/;transportMode=http;httpPath=/hive2
+        url: jdbc:hive2://{0}:{1}/;transportMode=http;httpPath=/hive2
 hs2:
     datasource:
         driver-class-name: com.cloudera.hive.jdbc41.HS2Driver
-        jdbc-url: jdbc:hive2://18.216.202.239:10000/retaildb
+        jdbc-url: jdbc:hive2://18.216.202.239:10000/retaildb/;transportMode=http;httpPath=/hive2
         password: ''
         username: ''
     validate:
-        url: jdbc:hive2://{0}:{1}
+        url: jdbc:hive2://{0}:{1}/;transportMode=http;httpPath=/hive2
 impala:
     connection:
         kerberos:
@@ -36,9 +51,9 @@ logging:
                         sql:
                             BasicBinder: 'TRACE'
 server:
-    port: 5000
     servlet:
         context-path: /
+
 spring:
     batch.job.enabled: false
     #batch.initialize-schema: always
@@ -56,16 +71,16 @@ spring:
           test-on-borrow: true
         driver-class-name: com.mysql.jdbc.Driver
         hikari:
-            connectionTimeout: 30000
+            connectionTimeout: 300000
             idleTimeout: 30000
             maxLifetime: 2000000
             maximumPoolSize: 30
             minimumIdle: 5
             poolName: SpringBootJPAHikariCP
         jdbc-url: jdbc:mysql://mysql-instance1.c9z9oimycomq.us-east-2.rds.amazonaws.com:3306/DMU?autoReconnect=true&useSSL=false
-        password: DeDMU!23
+        password: DataEconomy1!
         type: com.zaxxer.hikari.HikariDataSource
-        username: DMU
+        username: rootmysql
         cachePrepStmts: true
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dataeconomy.migration.app.aop.Timed;
-import com.dataeconomy.migration.app.model.DmuReconDetailDTO;
+import com.dataeconomy.migration.app.model.DMUReconDetailDTO;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconDetailEntity;
 import com.dataeconomy.migration.app.mysql.repository.DmuReconDetailsRepository;
 
@@ -23,20 +23,20 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class DmuReconDetailService {
+public class DMUReconDetailService {
 
 	@Autowired
 	private DmuReconDetailsRepository dmuReconDetailRepository;
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuReconDetailDTO> getDMUReconDetailsList() {
+	public List<DMUReconDetailDTO> getDMUReconDetailsList() {
 		log.info(" DMUReconDetailService :: getDMUReconMainDetailsList ");
 		try {
 			List<DmuReconDetailEntity> reconDetailsList = dmuReconDetailRepository
 					.findAll(Sort.by(Direction.ASC, "dmuHIstoryDetailPK.srNo"));
 			return Optional.ofNullable(reconDetailsList).orElse(new ArrayList<>()).stream()
-					.map(reconObj -> DmuReconDetailDTO.builder().srNo(reconObj.getDmuHIstoryDetailPK().getSrNo())
+					.map(reconObj -> DMUReconDetailDTO.builder().srNo(reconObj.getDmuHIstoryDetailPK().getSrNo())
 							.filterCondition(reconObj.getFilterCondition()).schemaName(reconObj.getSchemaName())
 							.tableName(reconObj.getTableName()).targetS3Bucket(reconObj.getTargetS3Bucket())
 							.incrementalFlag(reconObj.getIncrementalFlag())
@@ -52,13 +52,13 @@ public class DmuReconDetailService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuReconDetailDTO> getReconDetailsBySearch(String requestNo) {
+	public List<DMUReconDetailDTO> getReconDetailsBySearch(String requestNo) {
 		log.info(" DMUReconDetailService :: getReconDetailsBySearch :: requestNo :: {} ", requestNo);
 		try {
 			List<DmuReconDetailEntity> reconDetailsEntityList = dmuReconDetailRepository
 					.findByGivenRequestNo(requestNo);
 			if (CollectionUtils.isNotEmpty(reconDetailsEntityList)) {
-				return reconDetailsEntityList.stream().map(dmuReconDetail -> DmuReconDetailDTO.builder()
+				return reconDetailsEntityList.stream().map(dmuReconDetail -> DMUReconDetailDTO.builder()
 						.srNo(dmuReconDetail.getDmuHIstoryDetailPK().getSrNo())
 						.filterCondition(dmuReconDetail.getFilterCondition()).schemaName(dmuReconDetail.getSchemaName())
 						.tableName(dmuReconDetail.getTableName()).targetS3Bucket(dmuReconDetail.getTargetS3Bucket())

@@ -21,17 +21,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dataeconomy.migration.app.batch.exception.DmuBatchExceptionHandler;
 import com.dataeconomy.migration.app.batch.listener.DmuJobCompletionNotificationListener;
-import com.dataeconomy.migration.app.batch.listener.DmuStepExecutionNotificationListener;
+import com.dataeconomy.migration.app.batch.listener.StepErrorLoggingListener;
 import com.dataeconomy.migration.app.batch.processor.DmuSchedulerTasklet;
-import com.dataeconomy.migration.app.batch.writer.DmuSchedulerJdbcWriter;
 import com.dataeconomy.migration.app.mysql.entity.DmuTgtOtherPropEntity;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuHistoryDetailRepository;
-import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuTgtOtherPropRepository;
 import com.dataeconomy.migration.app.util.DmuConstants;
 import com.dataeconomy.migration.app.util.DmuServiceHelper;
@@ -52,7 +54,7 @@ public class DmuBatchScheduler {
 	DmuTgtOtherPropRepository otherPropRepository;
 
 	@Autowired
-	DmuHistoryMainRepository historyMainRepository;
+	DMUHistoryMainRepository historyMainRepository;
 
 	@Autowired
 	DmuHistoryDetailRepository historyDetailRepository;
@@ -64,13 +66,20 @@ public class DmuBatchScheduler {
 	JobBuilderFactory jobBuilderFactory;
 
 	@Autowired
+	DmuBatchExceptionHandler dmuBatchExceptionHandler;
+
+	@Autowired
 	Step s1;
 
 	@Autowired
 	DmuJobCompletionNotificationListener jobCompletionListener;
 
+	@Autowired
+	StepErrorLoggingListener stepErrorLoggingListener;
+
 	@Scheduled(fixedDelay = 120000)
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+	@Retryable(maxAttempts = 5, backoff = @Backoff(delay = 100, maxDelay = 500))
 	public void performDataMigrationProcess() {
 		Long noOfParallelusers = 0L;
 		Long noOfParallelJobs = 0L;
@@ -112,28 +121,29 @@ public class DmuBatchScheduler {
 														historyEntity.getRequestNo() + "-" + historyEntity.getUserId())
 												.addDate("date", new Date()).addLong("time", System.currentTimeMillis())
 												.toJobParameters());
-								log.info("Job name, started with time : {} , completed with time  {} ",
-										jobExecution.getJobConfigurationName(), jobExecution.getCreateTime(),
-										jobExecution.getEndTime());
+								log.info(
+										" ## DmuBatchScheduler :: performDataMigrationProcess => jobName => {} , started with time : {}",
+										jobExecution.getJobConfigurationName(), jobExecution.getCreateTime());
 							} catch (Exception e) {
-								log.error(" => Exception occured at DmuBatchScheduler :: {} ",
+								log.error(
+										"  ## DmuBatchScheduler :: performDataMigrationProcess => Exception occurred at DmuBatchScheduler :: {} ",
 										ExceptionUtils.getStackTrace(e));
 								historyMainRepository.updateForRequestNo(historyEntity.getRequestNo(),
 										DmuConstants.FAILED);
 							}
 						}));
 			} else {
-				log.info(" DmuBatchScheduler : no tasks submitted for scheduler ");
+				log.info("  ## DmuBatchScheduler :: performDataMigrationProcess =>  no tasks submitted for scheduler ");
 			}
 		} else {
-			log.info(" DmuBatchScheduler : Job not executed due to number of users limit => {} exceeded => {} ",
+			log.info(
+					"  ## DmuBatchScheduler :: performDataMigrationProcess :: Job not executed due to number of users limit => {} exceeded ",
 					inProgressCount);
 		}
 	}
 
 	@Bean
 	public Step step1(StepBuilderFactory stepBuilderFactory, DmuSchedulerTasklet schedulerProcessor,
-			DmuSchedulerJdbcWriter stepWriter, DmuStepExecutionNotificationListener stepListener,
 			TaskExecutor taskExecutor) {
 		return stepBuilderFactory.get("step1").tasklet(schedulerProcessor).build();
 	}
@@ -149,7 +159,7 @@ public class DmuBatchScheduler {
 						DmuConstants.IN_PROGRESS);
 				Long parallelJobs = NumberUtils.toLong(dmuServiceHelper.getProperty(DmuConstants.PARALLEL_JOBS));
 				log.info(
-						" DmuBatchScheduler => getJobCount => numberOfJobs : {} , inProgressJobs : {} , parallelJobs : {}  ",
+						"  ## DmuBatchScheduler ::  getJobCount => numberOfJobs : {} , inProgressJobs : {} , parallelJobs : {}  ",
 						numberOfJobs, inProgressJobs, parallelJobs);
 				if (inProgressJobs < parallelJobs) {
 					if ((parallelJobs - inProgressJobs) > numberOfJobs) {
@@ -159,7 +169,7 @@ public class DmuBatchScheduler {
 					}
 				}
 				log.info(
-						" DmuBatchScheduler => getJobCount => numberOfThreads : {} to process the request for requestNo :: {} ",
+						"  ## DmuBatchScheduler ::  getJobCount => numberOfThreads : {} to process the request for requestNo :: {} ",
 						numberOfThreads, requestNo);
 			}
 			return numberOfThreads;

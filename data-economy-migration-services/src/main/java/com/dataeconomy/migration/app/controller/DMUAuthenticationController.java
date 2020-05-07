@@ -11,7 +11,7 @@ import com.dataeconomy.migration.app.service.DmuAuthenticationService;
 
 @RestController
 @RequestMapping("/datamigration/authentication")
-public class DmuAuthenticationController {
+public class DMUAuthenticationController {
 
 	@Autowired
 	private DmuAuthenticationService authenticationService;

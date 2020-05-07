@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dataeconomy.migration.app.aop.Timed;
 import com.dataeconomy.migration.app.model.DmuReconAndRequestStatusDTO;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection;
-import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
-import com.dataeconomy.migration.app.mysql.repository.DmuReconMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUReconMainRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,10 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 public class DmuHomeService {
 
 	@Autowired
-	private DmuReconMainRepository dmuReconMainRepository;
+	private DMUReconMainRepository dmuReconMainRepository;
 
 	@Autowired
-	private DmuHistoryMainRepository dmuHistoryMainRepository;
+	private DMUHistoryMainRepository dmuHistoryMainRepository;
 
 	@Timed
 	@Transactional(readOnly = true)

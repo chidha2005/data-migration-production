@@ -13,6 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -27,7 +29,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 @EnableAspectJAutoProxy
 @Aspect
-public class DmuApplication {
+public class DmuApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DmuApplication.class, args);
@@ -56,9 +58,9 @@ public class DmuApplication {
 	}
 
 	@Bean
-	public JobLauncher jobLauncher(JobRepository jobRepository) throws Exception {
+	public JobLauncher jobLauncher(JobRepository jobRepository, TaskExecutor taskExecutor) throws Exception {
 		SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
-		jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+		jobLauncher.setTaskExecutor(taskExecutor);
 		jobLauncher.setJobRepository(jobRepository);
 		jobLauncher.afterPropertiesSet();
 		return jobLauncher;
@@ -70,4 +72,10 @@ public class DmuApplication {
 		taskExecutor.setConcurrencyLimit(30);
 		return taskExecutor;
 	}
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(DmuApplication.class);
+	}
+
 }

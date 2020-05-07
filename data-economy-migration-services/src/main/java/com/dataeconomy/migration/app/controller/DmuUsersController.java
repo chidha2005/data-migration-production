@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dataeconomy.migration.app.model.DmuTgtOtherPropDTO;
 import com.dataeconomy.migration.app.model.DmuUsersDTO;
 import com.dataeconomy.migration.app.mysql.entity.DmuUsersEntity;
-import com.dataeconomy.migration.app.service.DmuBasketService;
+import com.dataeconomy.migration.app.service.DMUBasketService;
 import com.dataeconomy.migration.app.service.DmuTgtOtherPropService;
 import com.dataeconomy.migration.app.service.DmuUsersService;
 
@@ -31,7 +31,7 @@ public class DmuUsersController {
 	DmuTgtOtherPropService tgtOtherPropService;
 
 	@Autowired
-	DmuBasketService dmuBasketService;
+	DMUBasketService dmuBasketService;
 
 	@GetMapping("/all")
 	public List<DmuUsersDTO> getUsers() {

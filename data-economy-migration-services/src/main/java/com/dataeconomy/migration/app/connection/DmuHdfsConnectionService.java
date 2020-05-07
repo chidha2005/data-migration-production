@@ -31,10 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@SuppressWarnings("deprecation")
 public class DmuHdfsConnectionService {
 
-	@Value("${hs2.datasource.jdbc-url}")
-	public String hiveConnUrl;
+	// @Value("${hs2.datasource.jdbc-url}")
+	// public String hiveConnUrl;
 
 	@Autowired
 	private DmuHiveDataSourceService hiveConnectionService;
@@ -46,7 +47,7 @@ public class DmuHdfsConnectionService {
 	private DmuSparkConnectionService sparkConnectionService;
 
 	@Autowired
-	private DmuConnectionPool dmuConnectionPool;
+	private DMUConnectionPool dmuConnectionPool;
 
 	@Autowired
 	private DmuHdfsRepository hdfsRepository;
@@ -62,6 +63,8 @@ public class DmuHdfsConnectionService {
 			log.info(" initializing datasource connections while server start up ");
 			Class.forName(DmuConstants.HIVE_DRIVER_CLASS_NAME).newInstance();
 			Class.forName(DmuConstants.IMPALA_DRIVER_CLASS_NAME).newInstance();
+			Class.forName("org.apache.hive.jdbc.HiveDriver").newInstance();
+
 			DmuConnectionDTO connectionDto = DmuConnectionDTO.builder().build();
 			populateDMUAuthenticationProperties(connectionDto);
 			populateDMUHdfsProperties(connectionDto);
@@ -114,9 +117,49 @@ public class DmuHdfsConnectionService {
 			Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
 			if (hiveConnStringOpt.isPresent()) {
 				String hiveConnString = hiveConnStringOpt.get();
+				log.info("## DmuHdfsConnectionService :: populateDataSourceConfigAtServerStarts :: hiveConnUrl {}",
+						hiveConnString);
 				DataSource hiveDataSource = retrieveDataSource(DmuConstants.HIVE_CONN_POOL,
 						DmuConstants.HIVE_DRIVER_CLASS_NAME, hiveConnString);
 				dataSourceMap.put(DmuConstants.REGULAR, hiveDataSource);
+			} else {
+				log.error("## DmuHdfsConnectionService :: populateDataSourceConfigAtServerStarts :: invalid hive url");
+				throw new DataMigrationException("Invalid Connection Details for HIVE connection Validation ");
+			}
+		}
+		if (connectionDto.isImpalaConnEnabled()) {
+			Optional<String> impalaConnStringOpt = imaplaConnectionService.getImpalaConnectionDetails(connectionDto);
+			if (impalaConnStringOpt.isPresent()) {
+				String impalaConnString = impalaConnStringOpt.get();
+				// DataSource impalaDataSource = retrieveDataSource(DmuConstants.IMPALA,
+				// DmuConstants.IMPALA_DRIVER_CLASS_NAME, impalaConnString);
+				// dataSourceMap.put(DmuConstants.LARGEQUERY, impalaDataSource);
+				log.info(" ## DmuHdfsConnectionService :: populateDataSourceConfigAtServerStarts :: impalaConnUrl {}",
+						impalaConnString);
+			} else {
+				throw new DataMigrationException("Invalid Connection Details for IMPALA connection Validation ");
+			}
+		}
+		if (connectionDto.isSparkConnEnabled()) {
+			Optional<String> sparkConnStringOpt = sparkConnectionService.getSparkConnectionDetails(connectionDto);
+			if (sparkConnStringOpt.isPresent()) {
+				String sparkConnString = sparkConnStringOpt.get();
+				log.info(" ConnectionService :: validateConnection :: sparkConnString {}", sparkConnString);
+			} else {
+				throw new DataMigrationException("Invalid Connection Details for SPARK connection Validation ");
+			}
+		}
+	}
+
+	public void populateDataSourceConfigAtServerStarts(DmuConnectionDTO connectionDto, String dataSourceType)
+			throws DataMigrationException {
+		if (connectionDto.isHiveConnEnabled()) {
+			Optional<String> hiveConnStringOpt = hiveConnectionService.getHiveConnectionDetails(connectionDto);
+			if (hiveConnStringOpt.isPresent()) {
+				String hiveConnString = hiveConnStringOpt.get();
+				DataSource hiveDataSource = retrieveDataSource(DmuConstants.HIVE_CONN_POOL,
+						DmuConstants.HIVE_DRIVER_CLASS_NAME, hiveConnString);
+				dataSourceMap.put(dataSourceType, hiveDataSource);
 				log.info(" ConnectionService :: validateConnection :: hiveConnString {}", hiveConnString);
 			} else {
 				throw new DataMigrationException("Invalid Connection Details for HIVE connection Validation ");
@@ -167,10 +210,14 @@ public class DmuHdfsConnectionService {
 			if (dataSourceMap.get(dataSourceType) != null) {
 				return dataSourceMap.get(dataSourceType);
 			} else {
-				DataSource dataSource = dmuConnectionPool.getDataSourceFromConfig(DmuConstants.DEFAULT_HIVE_POOL,
-						DmuConstants.HIVE_DRIVER_CLASS_NAME, hiveConnUrl);
-				dataSourceMap.put(DmuConstants.REGULAR, dataSource);
-				return dataSource;
+				log.info(
+						"called => HDFSConnectionService  :: getValidDataSource :: dataSourceMap doesnt contains datasource constructing the datasource");
+				DmuConnectionDTO connectionDto = DmuConnectionDTO.builder().build();
+				populateDMUAuthenticationProperties(connectionDto);
+				populateDMUHdfsProperties(connectionDto);
+				populateDataSourceConfigAtServerStarts(connectionDto, dataSourceType);
+				log.info("called => HDFSConnectionService  :: getValidDataSource :: datasource constructed ");
+				return dataSourceMap.get(dataSourceType);
 			}
 		} catch (Exception exception) {
 			log.error("Exception while retrieving datasource for given type {} , {} ", dataSourceType,

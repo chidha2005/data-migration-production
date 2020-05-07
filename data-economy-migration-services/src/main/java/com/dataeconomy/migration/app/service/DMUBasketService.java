@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dataeconomy.migration.app.aop.Timed;
 import com.dataeconomy.migration.app.connection.DmuHdfsConnectionService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
-import com.dataeconomy.migration.app.model.DmuBasketDTO;
+import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.mysql.entity.DmuBasketTempEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuBasketTempId;
 import com.dataeconomy.migration.app.mysql.entity.DmuHistoryDetailEntity;
@@ -28,17 +28,17 @@ import com.dataeconomy.migration.app.mysql.entity.DmuPtgyTempEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuPtgyTempId;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconDetailEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconMainentity;
+import com.dataeconomy.migration.app.mysql.repository.DMUHistoryMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUReconMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuBasketTempRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuHistoryDetailRepository;
-import com.dataeconomy.migration.app.mysql.repository.DmuHistoryMainRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuPtgyRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuReconDetailsRepository;
-import com.dataeconomy.migration.app.mysql.repository.DmuReconMainRepository;
 import com.dataeconomy.migration.app.util.DmuConstants;
 import com.google.common.collect.Lists;
 
 @Service
-public class DmuBasketService {
+public class DMUBasketService {
 
 	@Autowired
 	private DmuBasketTempRepository basketTempRepository;
@@ -50,7 +50,7 @@ public class DmuBasketService {
 	private DmuHdfsConnectionService hdfcConnectionService;
 
 	@Autowired
-	private DmuReconMainRepository reconMainRepository;
+	private DMUReconMainRepository reconMainRepository;
 
 	@Autowired
 	private DmuHistoryDetailRepository historyDetailRepository;
@@ -59,16 +59,16 @@ public class DmuBasketService {
 	private DmuReconDetailsRepository dmuReconDetailRepository;
 
 	@Autowired
-	private DmuHistoryMainRepository dmuHistoryMainRepository;
+	private DMUHistoryMainRepository dmuHistoryMainRepository;
 
 	@Autowired
 	private DmuPtgyRepository dmuPtgyRepository;
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuBasketDTO> getAllBasketDetails() {
+	public List<DMUBasketDto> getAllBasketDetails() {
 		return Optional.ofNullable(basketTempRepository.findAll()).orElse(new ArrayList<>()).stream()
-				.map(basketObj -> DmuBasketDTO.builder().srNo(basketObj.getDmuBasketTempId().getSrNo())
+				.map(basketObj -> DMUBasketDto.builder().srNo(basketObj.getDmuBasketTempId().getSrNo())
 						.userId(basketObj.getDmuBasketTempId().getUserId()).requestType(basketObj.getRequestType())
 						.schemaName(basketObj.getSchemaName()).tableName(basketObj.getTableName())
 						.filterCondition(basketObj.getFilterCondition()).targetS3Bucket(basketObj.getTargetS3Bucket())
@@ -79,10 +79,10 @@ public class DmuBasketService {
 
 	@Timed
 	@Transactional(rollbackFor = Exception.class)
-	public boolean saveBasketDetails(List<DmuBasketDTO> dmuBasketDtoList, String userName) {
+	public boolean saveBasketDetails(List<DMUBasketDto> dmuBasketDtoList, String userName) {
 
 		List<DmuBasketTempEntity> dmuEntityList = Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>())
-				.stream().filter(DmuBasketDTO::isAddtoBasket)
+				.stream().filter(DMUBasketDto::isAddtoBasket)
 				.map(dmuBasketDto -> DmuBasketTempEntity.builder()
 						.dmuBasketTempId(DmuBasketTempId.builder().srNo(dmuBasketDto.getSrNo())
 								.userId(dmuBasketDto.getUserId()).labelName(dmuBasketDto.getLabelName()).build())
@@ -106,7 +106,7 @@ public class DmuBasketService {
 
 	@Timed
 	@Transactional(rollbackFor = Exception.class)
-	public boolean saveBasketDetailsAndPurge(List<DmuBasketDTO> dmuBasketDtoList, String userName)
+	public boolean saveBasketDetailsAndPurge(List<DMUBasketDto> dmuBasketDtoList, String userName)
 			throws DataMigrationException {
 		try {
 			List<DmuHistoryMainEntity> historyMainList = new ArrayList<>();
@@ -114,7 +114,7 @@ public class DmuBasketService {
 			List<DmuHistoryDetailEntity> historyDetailList = new ArrayList<>();
 			List<DmuReconDetailEntity> reconDetailList = new ArrayList<>();
 
-			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream().filter(DmuBasketDTO::isAddtoBasket)
+			Optional.ofNullable(dmuBasketDtoList).orElse(new ArrayList<>()).stream().filter(DMUBasketDto::isAddtoBasket)
 					.forEach(dmuBasketDto -> {
 
 						historyMainList.add(DmuHistoryMainEntity.builder().userId(dmuBasketDto.getUserId())
@@ -174,10 +174,10 @@ public class DmuBasketService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuBasketDTO> getBasketDetailsByUserId(String userId) {
+	public List<DMUBasketDto> getBasketDetailsByUserId(String userId) {
 		return Optional.ofNullable(basketTempRepository.findAllByOrderByDmuBasketTempIdUserIdAsc(userId))
 				.orElse(new ArrayList<>()).stream()
-				.map(basketObj -> DmuBasketDTO.builder().srNo(basketObj.getDmuBasketTempId().getSrNo())
+				.map(basketObj -> DMUBasketDto.builder().srNo(basketObj.getDmuBasketTempId().getSrNo())
 						.userId(basketObj.getDmuBasketTempId().getUserId()).schemaName(basketObj.getSchemaName())
 						.requestType(basketObj.getRequestType()).tableName(basketObj.getTableName())
 						.filterCondition(basketObj.getFilterCondition()).targetS3Bucket(basketObj.getTargetS3Bucket())
@@ -196,16 +196,16 @@ public class DmuBasketService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuBasketDTO> getBasketDetailsBySearchParam(String searchParam) throws DataMigrationException {
+	public List<DMUBasketDto> getBasketDetailsBySearchParam(String searchParam) throws DataMigrationException {
 		return new JdbcTemplate(hdfcConnectionService.getValidDataSource(DmuConstants.REGULAR))
-				.query("USE " + searchParam + "; SHOW TABLES;", new ResultSetExtractor<List<DmuBasketDTO>>() {
+				.query("USE " + searchParam + "; SHOW TABLES;", new ResultSetExtractor<List<DMUBasketDto>>() {
 
 					@Override
-					public List<DmuBasketDTO> extractData(ResultSet rs) throws SQLException {
-						List<DmuBasketDTO> dmuBasketDtoList = Lists.newArrayList();
+					public List<DMUBasketDto> extractData(ResultSet rs) throws SQLException {
+						List<DMUBasketDto> dmuBasketDtoList = Lists.newArrayList();
 						Long value = 0L;
 						while (rs.next()) {
-							dmuBasketDtoList.add(DmuBasketDTO.builder().srNo(++value).schemaName(rs.getString(1))
+							dmuBasketDtoList.add(DMUBasketDto.builder().srNo(++value).schemaName(rs.getString(1))
 									.tableName(rs.getString(1)).filterCondition(null)
 									.targetS3Bucket(searchParam + "/" + rs.getString(1))
 									.incrementalFlag(DmuConstants.NO).incrementalClmn(null).build());

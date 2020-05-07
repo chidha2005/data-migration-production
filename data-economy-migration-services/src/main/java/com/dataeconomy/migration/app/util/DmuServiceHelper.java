@@ -22,9 +22,9 @@ import com.dataeconomy.migration.app.mysql.entity.DmuHdfsEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuHistoryDetailEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuTgtFormatEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuTgtOtherPropEntity;
+import com.dataeconomy.migration.app.mysql.repository.DMUS3Repository;
 import com.dataeconomy.migration.app.mysql.repository.DmuAuthenticationRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuHdfsRepository;
-import com.dataeconomy.migration.app.mysql.repository.DmuS3Repository;
 import com.dataeconomy.migration.app.mysql.repository.DmuTgtFormatPropRepository;
 import com.dataeconomy.migration.app.mysql.repository.DmuTgtOtherPropRepository;
 import com.dataeconomy.migration.app.service.DmuTgtOtherPropService;
@@ -39,7 +39,7 @@ public class DmuServiceHelper {
 	DmuHdfsRepository hdfsRepository;
 
 	@Autowired
-	DmuS3Repository dmuS3Repository;
+	DMUS3Repository dmuS3Repository;
 
 	@Autowired
 	DmuTgtFormatPropRepository tgtFormatPropRepository;
@@ -582,6 +582,9 @@ public class DmuServiceHelper {
 
 			urlBuilder.append(propertiesMap.get(DmuConstants.HADOOP_INSTALL_DIR));
 			urlBuilder.append("/hadoop distcp ");
+			urlBuilder.append("-Dmapreduce.map.memory.mb=4096-Dyarn.app.mapreduce.am.resource.mb=4096 ");
+			urlBuilder.append(
+					"-Dmapred.job.queue.name=DISTCP_exec -prb -bandwidth 50 -m 50 -update -delete -strategy dynamic");
 			urlBuilder.append(" -Dfs.s3a.access.key=");
 			urlBuilder.append("\"");
 			if (DmuConstants.DIRECT_LC.equalsIgnoreCase(propertiesMap.get(DmuConstants.CREDENTIAL_STRG_TYPE))) {

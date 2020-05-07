@@ -14,7 +14,7 @@ import com.dataeconomy.migration.app.mysql.entity.DmuHistoryMainEntity;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection;
 
 @Repository
-public interface DmuHistoryMainRepository extends JpaRepository<DmuHistoryMainEntity, String> {
+public interface DMUHistoryMainRepository extends JpaRepository<DmuHistoryMainEntity, String> {
 
 	@Query("select history from DmuHistoryMainEntity history where history.status in :ids ORDER BY history.requestedTime DESC")
 	List<DmuHistoryMainEntity> findHistoryMainDetailsByStatus(@Param("ids") List<String> inventoryIdList);

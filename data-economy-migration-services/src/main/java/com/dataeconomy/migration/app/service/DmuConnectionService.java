@@ -15,8 +15,8 @@ import com.dataeconomy.migration.app.connection.DmuConnectionValidateService;
 import com.dataeconomy.migration.app.connection.DmuHdfsConnectionService;
 import com.dataeconomy.migration.app.exception.DataMigrationException;
 import com.dataeconomy.migration.app.model.DmuConnectionDTO;
-import com.dataeconomy.migration.app.service.aws.DmuAwsAssumeRoleCredentialsService;
-import com.dataeconomy.migration.app.service.aws.DmuAwsAssumeRoleWithSAMLCredentialsService;
+import com.dataeconomy.migration.app.service.aws.DMUAwsAssumeRoleCredentialsService;
+import com.dataeconomy.migration.app.service.aws.DMUAwsAssumeRoleWithSAMLCredentialsService;
 import com.dataeconomy.migration.app.service.aws.DmuAwsFederatedTempCredentialsService;
 import com.dataeconomy.migration.app.service.aws.DmuAwsLongTermCredentialsService;
 import com.dataeconomy.migration.app.util.DmuConstants;
@@ -41,10 +41,10 @@ public class DmuConnectionService {
 	private DmuAwsLongTermCredentialsService awsLongTermAwsCredentialsService;
 
 	@Autowired
-	private DmuAwsAssumeRoleCredentialsService awsAssumeRoleCredentialsService;
+	private DMUAwsAssumeRoleCredentialsService awsAssumeRoleCredentialsService;
 
 	@Autowired
-	private DmuAwsAssumeRoleWithSAMLCredentialsService awsAssumeRoleWithSAMLCredentialsService;
+	private DMUAwsAssumeRoleWithSAMLCredentialsService awsAssumeRoleWithSAMLCredentialsService;
 
 	@Autowired
 	private DmuConnectionValidateService dmuConnectionValidationService;

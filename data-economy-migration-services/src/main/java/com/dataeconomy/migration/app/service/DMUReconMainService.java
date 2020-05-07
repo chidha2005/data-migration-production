@@ -14,28 +14,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dataeconomy.migration.app.aop.Timed;
-import com.dataeconomy.migration.app.model.DmuReconMainDTO;
+import com.dataeconomy.migration.app.model.DMUReconMainDto;
 import com.dataeconomy.migration.app.mysql.entity.DmuReconMainentity;
-import com.dataeconomy.migration.app.mysql.repository.DmuReconMainRepository;
+import com.dataeconomy.migration.app.mysql.repository.DMUReconMainRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class DmuReconMainService {
+public class DMUReconMainService {
 
 	@Autowired
-	DmuReconMainRepository dmuReconMainRepository;
+	DMUReconMainRepository dmuReconMainRepository;
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuReconMainDTO> getDMUReconMainDetailsList() {
+	public List<DMUReconMainDto> getDMUReconMainDetailsList() {
 		log.info(" DMUReconMainService :: getDMUReconMainDetailsList ");
 		try {
 			List<DmuReconMainentity> reconDetailsList = dmuReconMainRepository
 					.findAll(Sort.by(Direction.ASC, "requestedTime"));
 			return Optional.ofNullable(reconDetailsList).orElse(new ArrayList<>()).stream()
-					.map(reconObj -> DmuReconMainDTO.builder().requestNo(reconObj.getRequestNo())
+					.map(reconObj -> DMUReconMainDto.builder().requestNo(reconObj.getRequestNo())
 							.userId(reconObj.getUserId()).requestedTime(reconObj.getRequestedTime())
 							.status(reconObj.getStatus()).requestType(reconObj.getRequestType())
 							.reconStartTime(reconObj.getReconStartTime()).reconCmpltTime(reconObj.getReconCmpltTime())
@@ -50,12 +50,12 @@ public class DmuReconMainService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public List<DmuReconMainDTO> getAllDatabasesByUserId(String userId) {
-		log.info(" DMUReconMainService :: getDMUReconMainDetailsList ");
+	public List<DMUReconMainDto> getAllDatabasesByUserId(String userId) {
+		log.info(" DMUReconMainDTO :: getDMUReconMainDetailsList ");
 		try {
 			List<DmuReconMainentity> reconDetailsList = dmuReconMainRepository.getAllDatabasesByUserId(userId);
 			return Optional.ofNullable(reconDetailsList).orElse(new ArrayList<>()).stream()
-					.map(reconObj -> DmuReconMainDTO.builder().requestNo(reconObj.getRequestNo())
+					.map(reconObj -> DMUReconMainDto.builder().requestNo(reconObj.getRequestNo())
 							.userId(reconObj.getUserId()).requestedTime(reconObj.getRequestedTime())
 							.status(reconObj.getStatus()).requestType(reconObj.getRequestType())
 							.reconStartTime(reconObj.getReconStartTime()).reconCmpltTime(reconObj.getReconCmpltTime())
@@ -70,22 +70,22 @@ public class DmuReconMainService {
 
 	@Timed
 	@Transactional(readOnly = true)
-	public DmuReconMainDTO getReconDetailsBySearch(String requestNo) {
+	public DMUReconMainDto getReconDetailsBySearch(String requestNo) {
 		log.info(" DMUReconMainService :: getReconDetailsBySearch ");
 		try {
 			Optional<DmuReconMainentity> reconDetailsEntity = dmuReconMainRepository.findById(requestNo);
 			if (reconDetailsEntity.isPresent()) {
 				DmuReconMainentity dmuReconMain = reconDetailsEntity.get();
-				return DmuReconMainDTO.builder().requestNo(dmuReconMain.getRequestNo()).userId(dmuReconMain.getUserId())
+				return DMUReconMainDto.builder().requestNo(dmuReconMain.getRequestNo()).userId(dmuReconMain.getUserId())
 						.requestedTime(dmuReconMain.getRequestedTime()).status(dmuReconMain.getStatus())
 						.requestType(dmuReconMain.getRequestType()).reconStartTime(dmuReconMain.getReconStartTime())
 						.reconCmpltTime(dmuReconMain.getReconCmpltTime()).build();
 			}
-			return DmuReconMainDTO.builder().build();
+			return DMUReconMainDto.builder().build();
 		} catch (Exception exception) {
 			log.info(" Exception occured at DMUReconMainService :: getReconDetailsBySearch {} ",
 					ExceptionUtils.getStackTrace(exception));
-			return DmuReconMainDTO.builder().build();
+			return DMUReconMainDto.builder().build();
 		}
 	}
 

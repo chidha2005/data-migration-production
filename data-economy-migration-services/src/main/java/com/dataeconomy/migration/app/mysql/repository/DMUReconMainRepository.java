@@ -11,7 +11,7 @@ import com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProject
 import com.dataeconomy.migration.app.mysql.entity.DmuReconMainentity;
 
 @Repository
-public interface DmuReconMainRepository extends JpaRepository<DmuReconMainentity, String> {
+public interface DMUReconMainRepository extends JpaRepository<DmuReconMainentity, String> {
 
 	@Query("select new com.dataeconomy.migration.app.mysql.entity.DmuReconAndRequestCountProjection(v.status , count(v) as cnt) from DmuReconMainentity v group by v.status")
 	public List<DmuReconAndRequestCountProjection> findReconMainStatusCount();

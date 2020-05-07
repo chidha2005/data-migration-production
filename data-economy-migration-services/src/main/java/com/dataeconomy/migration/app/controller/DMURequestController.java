@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dataeconomy.migration.app.model.DmuBasketDTO;
+import com.dataeconomy.migration.app.model.DMUBasketDto;
 import com.dataeconomy.migration.app.model.DmuHistoryDTO;
+import com.dataeconomy.migration.app.service.DMURequestService;
 import com.dataeconomy.migration.app.service.DmuHistoryMainService;
-import com.dataeconomy.migration.app.service.DmuRequestService;
 
 @RestController
 @RequestMapping("/datamigration/request")
-public class DmuRequestController {
+public class DMURequestController {
 
 	@Autowired
-	private DmuRequestService dmuRequestService;
+	private DMURequestService dmuRequestService;
 
 	@Autowired
 	private DmuHistoryMainService historyMainService;
@@ -38,7 +38,7 @@ public class DmuRequestController {
 	}
 
 	@GetMapping("/all/{databaseName}")
-	public List<DmuBasketDTO> getAllTablesForGivenDatabase(@PathVariable(name = "databaseName") String databaseName) {
+	public List<DMUBasketDto> getAllTablesForGivenDatabase(@PathVariable(name = "databaseName") String databaseName) {
 		return dmuRequestService.getAllTablesForGivenDatabase(databaseName);
 	}
 	@GetMapping("/checkLableExist")

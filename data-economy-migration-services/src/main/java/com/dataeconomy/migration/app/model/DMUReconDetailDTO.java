@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DmuReconDetailDTO {
+public class DMUReconDetailDTO {
 
 	private String requestNo;
 
